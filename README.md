@@ -85,7 +85,10 @@ optional arguments:
 * [sequencing_tools](https://github.com/wckdouglas/sequencing_tools) for DNA sequence manipulations
 
 ## Validation ##
-[Validation] Precision: 0.851     
-[Validation] Recall: 0.926       
-[Validation] F1: 0.887     
-[Validation] AUROC: 0.944    
+```
+$ deep_cfNA validation --genome $REF/hg19/genome/hg19_genome.fa --validation_bed test.bed --model_prefix ./deep_cfNA
+[Validation] Precision: 0.851  
+[Validation] Recall: 0.926    
+[Validation] F1: 0.887  
+[Validation] AUROC: 0.944
+```
