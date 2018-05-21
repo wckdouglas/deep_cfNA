@@ -35,6 +35,13 @@ def getopt():
     training.add_argument('--model_prefix', help ='where to save the model')
 
 
+    #add validation command
+    validation = subparsers.add_parser('validation', help='deep_cfNA validation')
+    validation.add_argument('--genome', help ='genome fasta file (must have faidx)', required=True)
+    validation.add_argument('--validation_bed', help ='bed file for validation', required=True)
+    validation.add_argument('--model_prefix', help ='where to save the model', required=True)
+
+
     #add_test commands
     prediction = subparsers.add_parser('predict', help = 'deep cfNA prediction using existing model')
     prediction.add_argument('--inbed',help='BED file for fragments:  \n'\
@@ -57,47 +64,65 @@ def getopt():
     prediction.add_argument('--model_prefix', default=default_model_predix)
 
     return parser.parse_args()
+
+
+def validation(args, model):
+    '''
+    validation using a known bed file
+    '''
+    validation_sample(args.validation_bed, args.genome, model)
+
+
+def training(args):
+    '''
+    training model with ground truth bed
+    '''
+    history, model = training_sample(args.train_bed, args.genome)
+
+    if args.model_prefix:
+        save_model(model, prefix = args.model_prefix)
+
+    if args.validation_bed:
+        validation(args, model)
+
+def prediction(args, model):
+    '''
+    Run prediction, needs a loaded keras model, genome and bed file
+    '''
+    feature_generator = prediction_generator(args.inbed, args.genome, batch_size = args.batch_size)
+
+    if args.out == '-' or args.out == "/dev/stdout":
+        out = sys.stdout  
+        stdout = True
+    else: 
+        out = xopen(args.out, 'w')
+        stdout = False
+
+    for batch, (features, bed_lines) in enumerate(feature_generator):
+        predictions = model.predict_classes(features)
+        for prediction, bed_line in zip(predictions, bed_lines):
+            label = 'DNA' if prediction == 1 else 'RNA'
+            print(bed_line + '\t' + label, file = out)
         
+        if batch % 100 == 0:
+            print('Processed %i batches' %batch, file = sys.stderr)
+    if stdout:
+        out.close()
+
 
 def main():
     args = getopt()
 
     if args.subcommand == 'train':
-        history, model = training_sample(args.train_bed, args.genome)
+        training(args)
 
-        if args.model_prefix:
-            save_model(model, prefix = args.model_prefix)
-
-        if args.validation_bed:
-            validation_sample(args.validation_bed, args.genome, model)
-
-
-    elif args.subcommand == 'predict':
+    else:
         model = load_model(args.model_prefix)
-        feature_generator = prediction_generator(args.inbed, args.genome, batch_size = args.batch_size)
+        if args.subcommand == 'validation':
+            validation(args, model)
 
-        if args.out == '-' or args.out == "/dev/stdout":
-            out = sys.stdout  
-            stdout = True
-        else: 
-            out = xopen(args.out, 'w')
-            stdout = False
-
-        for batch, (features, bed_lines) in enumerate(feature_generator):
-            predictions = model.predict_classes(features)
-            for prediction, bed_line in zip(predictions, bed_lines):
-                label = 'DNA' if prediction == 1 else 'RNA'
-                print(bed_line + '\t' + label, file = out)
-            
-            if batch % 100 == 0:
-                print('Processed %i batches' %batch, file = sys.stderr)
-        if stdout:
-            out.close()
-        
-
-
-
-
-
+        elif args.subcommand == 'predict':
+            prediction(args, model)
+           
 if __name__ == '__main__':
     main()
