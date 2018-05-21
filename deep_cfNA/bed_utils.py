@@ -125,7 +125,7 @@ def prediction_generator(test_bed, fa_file, batch_size = 1000):
     i = 0
     genome_fa = pysam.Fastafile(fa_file)
     with open(test_bed, 'r') as bed:
-        for bedline in bed:
+        for bed_line in bed:
             fields = bed_line.rstrip('\n').split('\t')
             chrom, start, end, strand = itemgetter(0,1,2,5)(fields)
             feature = padded_seq(chrom, start, end, strand, genome_fa)
