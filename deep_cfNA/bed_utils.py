@@ -115,9 +115,15 @@ class data_generator():
 def prediction_generator(test_bed, fa_file, batch_size = 1000):
     assert(batch_size > 0)
     features = []
-    for i, (seq, label) in enumerate(get_padded_seq(test_bed, fa_file)):
-        features.append(dna_encoder.transform(seq))
-        if i % batch_size == 0 and i > 0:
-            yield(np.array(features))
-            features = []
+    i = 0
+    try:
+        while True:
+            seq, label = next(get_padded_seq(test_bed, fa_file))
+            features.append(dna_encoder.transform(seq))
+            i += 1
+            if i % batch_size == 0 and i > 0:
+                yield(np.array(features))
+                features = []
+    except StopIteration:
+        yield(np.array(features))
  

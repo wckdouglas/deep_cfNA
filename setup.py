@@ -11,6 +11,7 @@ setup(
     author_email = 'wckdouglas@gmail.com',
     license = 'MIT',
     packages = find_packages(),
+    scripts = glob.glob('bin/*'),
     zip_safe = False,
     data_files=[('model', glob.glob('model/deep_cfNA_*'))],
 )

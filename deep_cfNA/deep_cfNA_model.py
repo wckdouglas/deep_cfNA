@@ -3,7 +3,8 @@ from keras.layers import Dense, Conv1D,\
                          Flatten, MaxPool1D,  \
                          Dropout, LSTM, \
                          Bidirectional
-from metrics import f1_metrics
+from deep_cfNA.metrics import f1_metrics
+import sys
 
 def deep_cfNA():
     '''
@@ -35,6 +36,7 @@ def load_model(prefix):
     json = open(prefix + '_architecture.json', 'r').read()
     model = model_from_json(json)
     model.load_weights(prefix + '_weights.h5')
+    print('Load model: %s' %prefix, file = sys.stderr)
     return model
 
 
@@ -44,14 +46,14 @@ def save_model(model, prefix = 'model'):
     '''
     weight_h5 = prefix + '_weights.h5'
     model.save_weights(weight_h5)
-    print('Saved weights to %s' %weight_h5)
+    print('Saved weights to %s' %weight_h5, file = sys.stderr)
 
     # Save the model architecture
     model_json = prefix + '_architecture.json'
     with open(model_json, 'w') as f:
         f.write(model.to_json())
 
-    print('Saved model to %s' %model_json)
+    print('Saved model to %s' %model_json, file = sys.stderr)
 
 
 
