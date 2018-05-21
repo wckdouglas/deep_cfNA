@@ -83,3 +83,9 @@ optional arguments:
 * [Keras](https://keras.io/) as deep learning framework
 * [TensorFlow](https://www.tensorflow.org/) as backend
 * [sequencing_tools](https://github.com/wckdouglas/sequencing_tools) for DNA sequence manipulations
+
+## Validation ##
+[Validation] Precision: 0.851
+[Validation] Recall: 0.926
+[Validation] F1: 0.887
+[Validation] AUROC: 0.944
