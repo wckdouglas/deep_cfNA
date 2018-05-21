@@ -4,6 +4,7 @@ from keras.layers import Dense, Conv1D,\
                          Dropout, LSTM, \
                          Bidirectional
 from deep_cfNA.metrics import f1_metrics
+from deep_cfNA.bed_utils import frag_size
 import sys
 
 def deep_cfNA():
