@@ -61,8 +61,12 @@ def main():
 
     if args.subcommand == 'train':
         history, model = training_sample(args.train_bed, args.genome)
-        save_model(model, prefix = args.model_prefix)
-        validation_sample(args.validation_bed, args.genome, model)
+
+        if args.model_prefix:
+            save_model(model, prefix = args.model_prefix)
+
+        if args.validation_bed:
+            validation_sample(args.validation_bed, args.genome, model)
 
 
     elif args.subcommand == 'predict':
