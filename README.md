@@ -85,7 +85,7 @@ optional arguments:
 * [sequencing_tools](https://github.com/wckdouglas/sequencing_tools) for DNA sequence manipulations
 
 ## Validation ##
-[Validation] Precision: 0.851
-[Validation] Recall: 0.926
-[Validation] F1: 0.887
-[Validation] AUROC: 0.944
+[Validation] Precision: 0.851     
+[Validation] Recall: 0.926       
+[Validation] F1: 0.887     
+[Validation] AUROC: 0.944    
