@@ -10,7 +10,7 @@ from deep_cfNA.bed_utils import prediction_generator
 import sys
 
 def getopt():
-    parser = argparse.ArgumentParser(prog='Deep cfNA model')
+    parser = argparse.ArgumentParser(prog=sys.argv[0])
     subparsers = parser.add_subparsers(help='Run type for deep cfNA',
                                     dest='subcommand')
     subparsers.required = True
