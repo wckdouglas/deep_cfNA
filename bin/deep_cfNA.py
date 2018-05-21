@@ -49,7 +49,7 @@ def getopt():
                         '7. label: (DNA or RNA)',
                         required=True)
     prediction.add_argument('--genome', help ='genome fasta file (must have faidx)', required=True)
-    prediction.add_argument('--model_prefix', default=pkg_resources.resource_filename('deep_cfNA', "pretrained_model/deep_cfNA"))
+    prediction.add_argument('--model_prefix', default=pkg_resources.resource_filename('deep_cfNA', "model/deep_cfNA"))
 
     return parser.parse_args()
         

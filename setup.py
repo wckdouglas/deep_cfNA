@@ -12,7 +12,5 @@ setup(
     license = 'MIT',
     packages = find_packages(),
     zip_safe = False,
-    ext_modules = ext_modules,
-    cmdclass = {'build_ext': build_ext}
-    package_data={'deep_cfNA/model': ['model/deep_cfNA_*']},
+    data_files=[('model', glob.glob('model/deep_cfNA_*'))],
 )
