@@ -69,9 +69,9 @@ def main():
         model = load_model(args.model_prefix)
         feature_generator = prediction_generator(args.inbed, args.genome, batch_size = 1000)
         for batch, (features, bed_lines) in enumerate(feature_generator):
-            predictions = model.predict(features)
+            predictions = model.predict_classes(features)
             for prediction, bed_line in zip(predictions, bed_lines):
-                label = 'RNA' if prediction == 0 else 'DNA'
+                label = 'DNA' if prediction == 1 else 'RNA'
                 print(bed_line + '\t' + label)
             
             if batch % 100 == 0:

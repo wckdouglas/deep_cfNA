@@ -5,6 +5,7 @@ from sequencing_tools.fastq_tools import reverse_complement, \
 import pysam
 import random
 import numpy as np
+import sys
 
 
 '''
@@ -122,21 +123,27 @@ def prediction_generator(test_bed, fa_file, batch_size = 1000):
     assert(batch_size > 0)
     features = []
     lines = []
-    i = 0
+    sample_in_batch = 0
+    skip = 0
     genome_fa = pysam.Fastafile(fa_file)
     with open(test_bed, 'r') as bed:
         for bedline in bed:
             fields = bed_line.rstrip('\n').split('\t')
             chrom, start, end, strand = itemgetter(0,1,2,5)(fields)
-            feature = padded_seq(chrom, start, end, strand, genome_fa)
-            features.append(dna_encoder.transform(feature))
-            lines.append(bed_line.strip())
-            i += 1
-            if i % batch_size == 0 and i > 0:
-                yield(np.array(features), lines)
-                features = []
-                lines = []
+            seq = padded_seq(chrom, start, end, strand, genome_fa)
+            if set(seq).issubset(acceptable_nuc):
+                features.append(dna_encoder.transform(seq))
+                lines.append(bed_line.strip())
+                sample_in_batch += 1
+                if sample_in_batch % batch_size == 0 and i > 0:
+                    yield(np.array(features), lines)
+                    features = []
+                    lines = []
+            else:
+                skip += 1
 
     if lines: 
         yield(np.array(features), lines)
+    
+    print('Skipped %i fragments with non-standard nucleotides', file=sys.stderr)
  
