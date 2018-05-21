@@ -7,6 +7,7 @@ from deep_cfNA import deep_cfNA_training
 from deep_cfNA.deep_cfNA_model import save_model, load_model
 from deep_cfNA.deep_cfNA_training import training_sample, validation_sample
 from deep_cfNA.bed_utils import prediction_generator
+import sys
 
 def getopt():
     parser = argparse.ArgumentParser(prog='Deep cfNA model')
@@ -66,13 +67,15 @@ def main():
 
     elif args.subcommand == 'predict':
         model = load_model(args.model_prefix)
-        bed_generator = prediction_generator(args.inbed, args.genome, batch_size = 1000)
-        predictions = model.predict_generator(bed_generator, steps=1000)
-        with open(args.inbed, 'r') as bed:
-            for line, prediction in zip(bed, predicitons):
-                na = 'DNA' if prediction == 1 else 'RNA'
-                outline = line.strip() +'\t' + na
-                print(outline)
+        feature_generator = prediction_generator(args.inbed, args.genome, batch_size = 1000)
+        for batch, (features, bed_lines) in enumerate(feature_generator):
+            predictions = model.predict(features)
+            for prediction, bed_line in zip(predictions, bed_lines):
+                label = 'RNA' if prediction == 0 else 'DNA'
+                print(bed_line + '\t' + label)
+            
+            if batch % 100 == 0:
+                print('Processed %i batches' %batch, file = sys.stderr)
         
 
 

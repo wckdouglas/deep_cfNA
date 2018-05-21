@@ -18,6 +18,28 @@ acceptable_nuc = list('ACTGN')
 dna_encoder = onehot_sequence_encoder(''.join(acceptable_nuc))
 
 
+def padded_seq(chrom, start, end ,strand, genome_fa):
+    start, end = int(start), int(end)
+    seq_length = end - start
+    if seq_length < frag_size:
+        padding_base = frag_size - seq_length
+        half_padding = int(padding_base/2)
+        seq = genome_fa.fetch(chrom, start, end)
+        seq = seq.upper()
+        seq = half_padding * 'N' + seq + (half_padding + 1) * 'N'
+
+    else:
+        center = (end + start) / 2
+        seq = genome_fa.fetch(chrom, 
+                                int(center) - int(frag_size/2), 
+                                int(center) + int(frag_size/2))
+
+    seq = seq.upper() 
+    seq = reverse_complement(seq) if strand == "-" else seq
+    return seq[:frag_size]
+ 
+
+
 def get_padded_seq(bed_file, fasta):
     '''
     For each record in bed file, extract the sequence, and center it
@@ -38,24 +60,8 @@ def get_padded_seq(bed_file, fasta):
         fields = line.rstrip('\n').split('\t')
         chrom, start, end, strand, label = itemgetter(0,1,2,5,-1)(fields)
         if chrom != 'chrM':
-            start, end = int(start), int(end)
-            seq_length = end - start
-            if seq_length < frag_size:
-                padding_base = frag_size - seq_length
-                half_padding = int(padding_base/2)
-                seq = genome_fa.fetch(chrom, start, end)
-                seq = seq.upper()
-                seq = half_padding * 'N' + seq + (half_padding + 1) * 'N'
-
-            else:
-                center = (end + start) / 2
-                seq = genome_fa.fetch(chrom, 
-                                      int(center) - int(frag_size/2), 
-                                      int(center) + int(frag_size/2))
-                seq = seq.upper() 
-                seq = reverse_complement(seq) if strand == "-" else seq
-            
-            yield seq[:frag_size], label
+            seq = padded_seq(chrom, start, end, strand, genome_fa)
+            yield seq, label
 
 
 def generate_padded_data(bed_file, fasta):
@@ -115,15 +121,22 @@ class data_generator():
 def prediction_generator(test_bed, fa_file, batch_size = 1000):
     assert(batch_size > 0)
     features = []
+    lines = []
     i = 0
-    try:
-        while True:
-            seq, label = next(get_padded_seq(test_bed, fa_file))
-            features.append(dna_encoder.transform(seq))
+    genome_fa = pysam.Fastafile(fa_file)
+    with open(test_bed, 'r') as bed:
+        for bedline in bed:
+            fields = bed_line.rstrip('\n').split('\t')
+            chrom, start, end, strand = itemgetter(0,1,2,5)(fields)
+            feature = padded_seq(chrom, start, end, strand, genome_fa)
+            features.append(dna_encoder.transform(feature))
+            lines.append(bed_line.strip())
             i += 1
             if i % batch_size == 0 and i > 0:
-                yield(np.array(features))
+                yield(np.array(features), lines)
                 features = []
-    except StopIteration:
-        yield(np.array(features))
+                lines = []
+
+    if lines: 
+        yield(np.array(features), lines)
  
