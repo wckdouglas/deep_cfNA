@@ -9,7 +9,7 @@ To test whether deep neural network can be used in identifying DNA contaminants 
 
 # Usage #
 
-Deep_cfNA has two sub-commands: ```train``` and ```predict```. 
+Deep_cfNA has three sub-commands: ```train```,```validation``` and ```predict```. 
 
 ### train  ###
 
@@ -51,6 +51,25 @@ optional arguments:
                         where to save the model
 ```
 
+### validation ###
+
+* ```validation```: takes a pretrained model and validate on a validation set of fragments, required:
+    * a genome fasta file
+    * a pre-labeled fragment bed file
+    * and model prefix for a keras pre-trained model
+
+```
+usage: deep_cfNA validation [-h] --genome GENOME --validation_bed
+                            VALIDATION_BED --model_prefix MODEL_PREFIX
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --genome GENOME       genome fasta file (must have faidx)
+  --validation_bed VALIDATION_BED
+                        bed file for validation
+  --model_prefix MODEL_PREFIX
+                        where to save the model
+```
 
 ### predict ###
 
@@ -86,9 +105,9 @@ optional arguments:
 
 ## Validation ##
 ```
-$ deep_cfNA validation --genome $REF/hg19/genome/hg19_genome.fa --validation_bed test.bed --model_prefix ./deep_cfNA
-[Validation] Precision: 0.851  
-[Validation] Recall: 0.926    
-[Validation] F1: 0.887  
-[Validation] AUROC: 0.944
+$ deep_cfNA validation --genome $REF/hg19/genome/hg19_genome.fa --validation_bed test/validation.bed --model_prefix model/deep_cfNA
+[Validation] Precision: 0.875
+[Validation] Recall: 0.887
+[Validation] F1: 0.881
+[Validation] AUROC: 0.928
 ```
