@@ -135,7 +135,7 @@ def prediction_generator(test_bed, fa_file, batch_size = 1000):
                 features.append(dna_encoder.transform(seq))
                 lines.append(bed_line.strip())
                 sample_in_batch += 1
-                if sample_in_batch % batch_size == 0 and i > 0:
+                if sample_in_batch % batch_size == 0 and sample_in_batch > 0:
                     yield(np.array(features), lines)
                     features = []
                     lines = []
@@ -145,5 +145,5 @@ def prediction_generator(test_bed, fa_file, batch_size = 1000):
     if lines: 
         yield(np.array(features), lines)
     
-    print('Skipped %i fragments with non-standard nucleotides', file=sys.stderr)
+    print('Skipped %i fragments with non-standard nucleotides' %skip, file=sys.stderr)
  
