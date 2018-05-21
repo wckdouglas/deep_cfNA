@@ -7,6 +7,7 @@ from deep_cfNA import deep_cfNA_training
 from deep_cfNA.deep_cfNA_model import save_model, load_model
 from deep_cfNA.deep_cfNA_training import training_sample, validation_sample
 from deep_cfNA.bed_utils import prediction_generator
+from sequencing_tools.io_tools import xopen
 import sys
 
 def getopt():
@@ -17,8 +18,8 @@ def getopt():
 
     #add training commands
     training = subparsers.add_parser('train',help='deep_cfNA training')
-    training.add_argument('--train_bed', help='bed file for fragments:  \n'\
-                        'For each record in bed file, extract the sequence, and center it \n'\
+    training.add_argument('--train_bed', help='BED file for fragments:  \n'\
+                        'For each record in BED file, extract the sequence, and center it \n'\
                         'fill up both sides to length of (seq_length) with Ns.\n' \
                         'Bed files need these columns: \n'\
                         '1. chrom \n'\
@@ -36,8 +37,8 @@ def getopt():
 
     #add_test commands
     prediction = subparsers.add_parser('predict', help = 'deep cfNA prediction using existing model')
-    prediction.add_argument('--inbed',help='bed file for fragments:  \n'\
-                        'For each record in bed file, extract the sequence, and center it \n'\
+    prediction.add_argument('--inbed',help='BED file for fragments:  \n'\
+                        'For each record in BED file, extract the sequence, and center it \n'\
                         'fill up both sides to length of (seq_length) with Ns.\n' \
                         'Bed files need these columns: \n'\
                         '1. chrom \n'\
@@ -49,6 +50,7 @@ def getopt():
                         '7. label: (DNA or RNA)',
                         required=True)
     prediction.add_argument('--genome', help ='genome fasta file (must have faidx)', required=True)
+    prediction.add_argument('--out', help ='out BED file (default: - )', default = '-')
     default_model_predix = pkg_resources.resource_filename('deep_cfNA', 'model')
     default_model_predix = os.path.dirname(os.path.dirname(default_model_predix)) + "/model/deep_cfNA"
     prediction.add_argument('--model_prefix', default=default_model_predix)
@@ -72,14 +74,24 @@ def main():
     elif args.subcommand == 'predict':
         model = load_model(args.model_prefix)
         feature_generator = prediction_generator(args.inbed, args.genome, batch_size = 1000)
+
+        if args.out == '-' or args.out == "/dev/stdout":
+            out = sys.stdout  
+            stdout = True
+        else: 
+            out = xopen(args.out, 'w')
+            stdout = False
+
         for batch, (features, bed_lines) in enumerate(feature_generator):
             predictions = model.predict_classes(features)
             for prediction, bed_line in zip(predictions, bed_lines):
                 label = 'DNA' if prediction == 1 else 'RNA'
-                print(bed_line + '\t' + label)
+                print(bed_line + '\t' + label, file = out)
             
             if batch % 100 == 0:
                 print('Processed %i batches' %batch, file = sys.stderr)
+        if stdout:
+            out.close()
         
 
 
