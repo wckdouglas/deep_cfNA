@@ -32,7 +32,7 @@ chr1    10045   10105   frag_2    0       +       RNA
 
 
 ```
-usage: Deep cfNA model train [-h] --train_bed TRAIN_BED --genome GENOME
+usage: deep_cfNA train [-h] --train_bed TRAIN_BED --genome GENOME
                              [--validation_bed VALIDATION_BED]
                              [--model_prefix MODEL_PREFIX]
 
@@ -64,7 +64,7 @@ optional arguments:
 
 
 ```
-usage: Deep cfNA model predict [-h] --inbed INBED --genome GENOME
+usage: deep_cfNA predict [-h] --inbed INBED --genome GENOME
                                [--model_prefix MODEL_PREFIX]
 
 optional arguments:
