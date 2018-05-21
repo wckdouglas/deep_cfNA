@@ -1,7 +1,9 @@
-from deep_cfNA.deep_cfNA_model import deep_cfNA, load_model, save_model, plot_train
+from deep_cfNA.deep_cfNA_model import deep_cfNA
 from deep_cfNA.bed_utils import generate_padded_data, data_generator
 from collections import defaultdict
 import numpy as np
+from sklearn.metrics import f1_score, precision_score, recall_score, roc_auc_score
+
 
 def training_sample(train_bed, fa_file):
     '''
@@ -63,3 +65,7 @@ def validation_sample(test_bed, fa_file, model):
     print("[Validation] Recall: %1.3f" % recall_score(y_test, y_pred_class))
     print("[Validation] F1: %1.3f" % f1_score(y_test, y_pred_class))
     print("[Validation] AUROC: %1.3f" % roc_auc_score(y_test, y_pred_prob))
+
+
+
+   

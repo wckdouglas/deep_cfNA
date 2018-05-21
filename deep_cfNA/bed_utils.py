@@ -1,7 +1,6 @@
 from operator import itemgetter
 from collections import defaultdict
 from sequencing_tools.fastq_tools import reverse_complement, \
-                    kmer_bag, \
                     onehot_sequence_encoder
 import pysam
 import random
@@ -111,3 +110,14 @@ class data_generator():
         '''
         X, Y = self.data_gen()
         return np.array(X), np.array(Y)
+
+
+def prediction_generator(test_bed, fa_file, batch_size = 1000):
+    assert(batch_size > 0)
+    features = []
+    for i, (seq, label) in enumerate(get_padded_seq(test_bed, fa_file)):
+        features.append(dna_encoder.transform(seq))
+        if i % batch_size == 0 and i > 0:
+            yield(np.array(features))
+            features = []
+ 
