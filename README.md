@@ -114,4 +114,4 @@ $ deep_cfNA validation --genome $REF/hg19/genome/hg19_genome.fa --validation_bed
 
 ## Bottomline ##
 
-Deep neural networks are in some way very flexible, a single architecture of neural network can be applied to different problems given different inputs and outpurs. As **Deep cfNA** takes a BED file with a labeled column as output at the very last column in the BED file, this should provide a small scale neural network architecture for classifying sequenced fragments (e.g. DNA vs RNA here).
+Deep neural networks are in some way very flexible, a single architecture of neural network can be applied to different problems given different inputs and outpurs. As **Deep cfNA** takes a BED file with a labeled column as output at the very last column in the BED file, this should provides a small scale neural network architecture for classifying sequenced fragments (e.g. DNA vs RNA here).
