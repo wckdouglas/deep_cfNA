@@ -1,0 +1,10 @@
+language: 
+    - python
+python:
+    - "3.6"
+# command to install dependencies
+install: 
+    - bash install.sh
+# # command to run tests
+script: 
+    - bash test_script.sh
