@@ -37,7 +37,7 @@ def load_model(prefix):
     json = open(prefix + '_architecture.json', 'r').read()
     model = model_from_json(json)
     model.load_weights(prefix + '_weights.h5')
-    print('Load model: %s' %prefix, file = sys.stderr)
+    print('Loaded model: %s' %prefix, file = sys.stderr)
     return model
 
 

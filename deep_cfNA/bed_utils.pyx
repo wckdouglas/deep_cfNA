@@ -95,11 +95,12 @@ def generate_padded_data(bed_file, fasta):
     Wrapper for generating one-hot-encoded sequences
     '''
     cdef:
-        str seq, label
+        str seq, na_label
+        int label
 
-    for i, (seq, label) in enumerate(get_padded_seq(bed_file, fasta)):
+    for i, (seq, na_label) in enumerate(get_padded_seq(bed_file, fasta)):
         if set(seq).issubset(acceptable_nuc):
-            label = 1 if label == "DNA" else 0
+            label = 1 if na_label == "DNA" else 0
             yield dna_encoder.transform(seq), label
 
 
