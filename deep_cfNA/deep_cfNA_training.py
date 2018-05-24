@@ -15,7 +15,7 @@ def training_sample(train_bed, fa_file, epochs):
     history = model.fit_generator(data_generator(train_bed, 
                                                  fa_file, 
                                                 batch_size = 500),
-                                  epochs = 20,
+                                  epochs = epochs,
                                   steps_per_epoch = 1000)
 
 
