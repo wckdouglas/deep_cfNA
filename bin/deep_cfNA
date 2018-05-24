@@ -30,8 +30,9 @@ def getopt():
                         '6. strand\n'\
                         '7. label: (DNA or RNA)',
                         required=True)
-    training.add_argument('--genome', help ='genome fasta file (must have faidx)', required=True)
     training.add_argument('--validation_bed', help ='bed file for validation')
+    training.add_argument('--epoch', default=10)
+    training.add_argument('--genome', help ='genome fasta file (must have faidx)', required=True)
     training.add_argument('--model_prefix', help ='where to save the model')
 
 
@@ -77,7 +78,7 @@ def training(args):
     '''
     training model with ground truth bed
     '''
-    history, model = training_sample(args.train_bed, args.genome)
+    history, model = training_sample(args.train_bed, args.genome, args.epoch)
 
     if args.model_prefix:
         save_model(model, prefix = args.model_prefix)

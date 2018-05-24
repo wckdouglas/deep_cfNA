@@ -5,7 +5,7 @@ import numpy as np
 from sklearn.metrics import f1_score, precision_score, recall_score, roc_auc_score
 
 
-def training_sample(train_bed, fa_file):
+def training_sample(train_bed, fa_file, epochs):
     '''
     Set up keras model
     retrieve data and train
