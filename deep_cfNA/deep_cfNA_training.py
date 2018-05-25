@@ -3,6 +3,7 @@ from deep_cfNA.bed_utils import generate_padded_data, data_generator
 from collections import defaultdict
 import numpy as np
 from sklearn.metrics import f1_score, precision_score, recall_score, roc_auc_score
+from keras.callbacks import TensorBoard
 
 
 def training_sample(train_bed, fa_file, epochs):
@@ -11,12 +12,15 @@ def training_sample(train_bed, fa_file, epochs):
     retrieve data and train
     '''
     
+    tensorboard = TensorBoard(log_dir='./logs', histogram_freq=0,
+                              write_graph=True, write_images=False)
     model = deep_cfNA()
     history = model.fit_generator(data_generator(train_bed, 
                                                  fa_file, 
                                                 batch_size = 500),
                                   epochs = epochs,
-                                  steps_per_epoch = 1000)
+                                  steps_per_epoch = 1000,
+                                  callbacks = [tensorboard])
 
 
     print('Fitted model')
