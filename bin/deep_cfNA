@@ -8,6 +8,8 @@ from deep_cfNA.deep_cfNA_model import save_model, load_model
 from deep_cfNA.deep_cfNA_training import training_sample, validation_sample
 from deep_cfNA.bed_utils import prediction_generator
 from sequencing_tools.io_tools import xopen
+from multiprocessing import Pool, cpu_count
+from functools import partial
 import sys
 
 def getopt():
@@ -86,12 +88,29 @@ def training(args):
     if args.validation_bed:
         validation(args, model)
 
-def prediction(args, model):
+
+def predict_job(model_prefix, arg):
+    '''
+    Actual work for predicting in batch
+    '''
+    features, bed_lines = arg
+    model = load_model(model_prefix, message=False)
+    predictions = model.predict_classes(features)
+    out_lines = ''
+    for prediction, bed_line in zip(predictions, bed_lines):
+        label = 'DNA' if prediction == 1 else 'RNA'
+        out_line = bed_line + '\t' + label + '\n'
+        out_lines += out_line
+    return out_lines
+
+
+def prediction(args, model_prefix):
     '''
     Run prediction, needs a loaded keras model, genome and bed file
     '''
     feature_generator = prediction_generator(args.inbed, args.genome, batch_size = args.batch_size)
 
+    #define output
     if args.out == '-' or args.out == "/dev/stdout":
         out = sys.stdout  
         stdout = True
@@ -99,14 +118,13 @@ def prediction(args, model):
         out = xopen(args.out, 'w')
         stdout = False
 
-    for batch, (features, bed_lines) in enumerate(feature_generator):
-        predictions = model.predict_classes(features)
-        for prediction, bed_line in zip(predictions, bed_lines):
-            label = 'DNA' if prediction == 1 else 'RNA'
-            print(bed_line + '\t' + label, file = out)
-        
+    predict_func = partial(predict_job, model_prefix)
+    p = Pool(cpu_count())
+    jobs = p.imap(predict_func, feature_generator, chunksize = 10)
+    for batch, out_lines in enumerate(jobs):
+        print(out_lines, file = out)
         if batch % 100 == 0:
-            print('Processed %i batches' %batch + 1, file = sys.stderr)
+            print('Processed %i batches' %(batch + 1), file = sys.stderr)
     if not stdout:
         out.close()
 
@@ -118,12 +136,12 @@ def main():
         training(args)
 
     else:
-        model = load_model(args.model_prefix)
         if args.subcommand == 'validation':
+            model = load_model(args.model_prefix)
             validation(args, model)
 
         elif args.subcommand == 'predict':
-            prediction(args, model)
+            prediction(args, args.model_prefix)
            
 if __name__ == '__main__':
     main()
