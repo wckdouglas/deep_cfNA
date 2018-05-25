@@ -127,6 +127,7 @@ class data_generator():
             str seq, na_label
             double random_frac
             int label
+            list X, Y
 
         X, Y = [], []
 
@@ -158,13 +159,14 @@ class data_generator():
 
 def prediction_generator(test_bed, fa_file, batch_size = 1000):
     cdef:
-        list feature, lines 
+        list features, lines 
         int skip = 0
+        int sample_in_batch = 0
         str bed_line
         str chrom, start, end, strand
         str seq
 
-    feature, lines =[], []
+    features, lines =[], []
     assert(batch_size > 0)
     genome_fa = pysam.Fastafile(fa_file)
     with xopen(test_bed, 'r') as bed:

@@ -30,14 +30,15 @@ def deep_cfNA():
                 metrics=[f1_metrics,'binary_accuracy'])
     return model
 
-def load_model(prefix):
+def load_model(prefix, message=True):
     '''
     keras load model
     '''
     json = open(prefix + '_architecture.json', 'r').read()
     model = model_from_json(json)
     model.load_weights(prefix + '_weights.h5')
-    print('Loaded model: %s' %prefix, file = sys.stderr)
+    if message:
+        print('Loaded model: %s' %prefix, file = sys.stderr)
     return model
 
 
