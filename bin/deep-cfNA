@@ -73,7 +73,7 @@ def validation(args, model):
     '''
     validation using a known bed file
     '''
-        feature_generator = prediction_generator(args.validation_bed, args.genome, 
+    feature_generator = prediction_generator(args.validation_bed, args.genome, 
                                                 batch_size = args.batch_size)
     validation_sample(args.validation_bed, args.genome, model)
 
