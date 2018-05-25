@@ -161,6 +161,7 @@ def prediction_generator(test_bed, fa_file, batch_size = 1000):
     cdef:
         list features, lines 
         int skip = 0
+        int sample_in_batch = 0
         str bed_line
         str chrom, start, end, strand
         str seq

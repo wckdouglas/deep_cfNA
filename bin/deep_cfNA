@@ -106,7 +106,7 @@ def prediction(args, model):
             print(bed_line + '\t' + label, file = out)
         
         if batch % 100 == 0:
-            print('Processed %i batches' %batch, file = sys.stderr)
+            print('Processed %i batches' %batch + 1, file = sys.stderr)
     if not stdout:
         out.close()
 
