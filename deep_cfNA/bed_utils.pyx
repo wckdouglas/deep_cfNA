@@ -158,6 +158,13 @@ class data_generator():
 
 
 def prediction_generator(test_bed, fa_file, batch_size = 1000):
+    '''
+    parsing each line of a bed file
+    fetch sequence and one-hot encode it
+
+    yeild list whenever batch_size is filled
+    '''
+
     cdef:
         list features, lines 
         int skip = 0
@@ -165,12 +172,13 @@ def prediction_generator(test_bed, fa_file, batch_size = 1000):
         str bed_line
         str chrom, start, end, strand
         str seq
+        uint32_t frag_count
 
     features, lines =[], []
     assert(batch_size > 0)
     genome_fa = pysam.Fastafile(fa_file)
     with xopen(test_bed, 'r') as bed:
-        for bed_line in bed:
+        for frag_count, bed_line in enumerate(bed):
             fields = bed_line.rstrip('\n').split('\t')
             chrom, start, end, strand = itemgetter(0,1,2,5)(fields)
             seq = padded_seq(chrom, start, end, strand, genome_fa)
@@ -188,6 +196,8 @@ def prediction_generator(test_bed, fa_file, batch_size = 1000):
     if lines: 
         yield(np.array(features), lines)
     
-    print('Skipped %i fragments with non-standard nucleotides' %skip, 
+    print('Parsed: {frag_count} fragments\n'\
+          'Skipped {skip} fragments with non-standard nucleotides'\
+          .format(frag_count = frag_count, skip = skip), 
           file=sys.stderr)
  
