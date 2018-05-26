@@ -9,9 +9,9 @@ To test whether deep neural network can be used in identifying DNA contaminants 
 
 # Usage #
 
-**Deep-cfNA** has three sub-commands: ```train```,```validation``` and ```predict```. 
+**Deep-cfNA** has three sub-commands: ```train```,```validate``` and ```predict```. 
 
-### train  ###
+### Training  ###
 
 * ```train```: for training a new model, required: 
 
@@ -32,34 +32,39 @@ chr1    10045   10105   frag_2    0       +       RNA
 
 
 ```
-usage: deep-cfNA train [-h] --train_bed TRAIN_BED --genome GENOME
-                             [--validation_bed VALIDATION_BED]
-                             [--model_prefix MODEL_PREFIX]
+usage: deep-cfNA train [-h] --train_bed_positive TRAIN_BED_POSITIVE
+                       --train_bed_negative TRAIN_BED_NEGATIVE
+                       [--validation_bed VALIDATION_BED] [--epoch EPOCH]
+                       --genome GENOME [--model_prefix MODEL_PREFIX]
 
 optional arguments:
   -h, --help            show this help message and exit
-  --train_bed TRAIN_BED
-                        bed file for fragments: For each record in bed file,
-                        extract the sequence, and center it fill up both sides
-                        to length of (seq_length) with Ns. Bed files need
-                        these columns: 1. chrom 2. start 3. end 4. 5. 6.
-                        strand 7. label: (DNA or RNA)
-  --genome GENOME       genome fasta file (must have faidx)
+  --train_bed_positive TRAIN_BED_POSITIVE
+                        BED file prefix for fragments, for positive label: For
+                        each record in BED file, extract the sequence, and
+                        center it fill up both sides to length of (seq_length)
+                        with Ns. Bed files need these columns: 1. chrom 2.
+                        start 3. end 4. 5. 6. strand 7. label: (DNA or RNA)
+  --train_bed_negative TRAIN_BED_NEGATIVE
+                        BED file prefix for fragments, for negative label
   --validation_bed VALIDATION_BED
                         bed file for validation
+  --epoch EPOCH
+  --genome GENOME       genome fasta file (must have faidx)
   --model_prefix MODEL_PREFIX
                         where to save the model
+
 ```
 
-### validation ###
+### Validation ###
 
-* ```validation```: takes a pretrained model and validate on a validation set of fragments, required:
+* ```validate```: takes a pretrained model and validate on a validation set of fragments, required:
     * a genome fasta file
     * a pre-labeled fragment bed file
     * and model prefix for a keras pre-trained model
 
 ```
-usage: deep-cfNA validation [-h] --genome GENOME --validation_bed
+usage: deep-cfNA validate [-h] --genome GENOME --validation_bed
                             VALIDATION_BED --model_prefix MODEL_PREFIX
 
 optional arguments:
@@ -71,7 +76,7 @@ optional arguments:
                         where to save the model
 ```
 
-### predict ###
+### Prediction ###
 
 * ```predict```: for predicting labels, required:
     * a genome fasta file
