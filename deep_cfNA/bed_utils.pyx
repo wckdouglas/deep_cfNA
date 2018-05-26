@@ -8,32 +8,28 @@ import numpy as np
 import sys
 import random
 from sequencing_tools.io_tools import xopen
-from libc.stdlib cimport rand, RAND_MAX
 from libc.stdint cimport uint32_t
 
 
-cpdef double random_generator():
-    '''
-    generate random fraction between 0 and 1
-    '''
-    return rand()/RAND_MAX * 1.
-
+cdef list acceptable_chrom 
+cdef list acceptable_nuc
 '''
 Only take in fragments from regular chromosomes
 '''
-cdef:
-    list acceptable_chrom 
-    list acceptable_nuc
-
 acceptable_chrom= list(range(1,23))
 acceptable_chrom.extend(['X','Y'])
 acceptable_chrom = ['chr' + str(chrom) for chrom in acceptable_chrom]
-frag_size = 400
+frag_size = 400 #length of the one-hot sequence
 acceptable_nuc = list('ACTGN')
 dna_encoder = onehot_sequence_encoder(''.join(acceptable_nuc))
 
 
 cdef str padded_seq(str chrom, str start_str, str end_str , str strand, genome_fa):
+    '''
+    1. fetch sequence from genome
+    2. centering the sequence
+    3. pad with Ns on both ends (fill-up to $frag_size$)
+    '''
     cdef:
         long start, end, center
         int seq_length, half_padding, padding_base
@@ -61,7 +57,7 @@ cdef str padded_seq(str chrom, str start_str, str end_str , str strand, genome_f
  
 
 
-def get_padded_seq(bed_file, fasta):
+def fetch_trainings(bed_file, fasta):
     '''
     For each record in bed file, extract the sequence, and center it
     fill up both sides to length of (seq_length) with Ns.
@@ -75,6 +71,9 @@ def get_padded_seq(bed_file, fasta):
     5. 
     6. strand
     7. label: (DNA or RNA)
+
+    return:
+        generator: (padded-sequence, label)
     '''
     cdef:
          uint32_t line_count
@@ -93,12 +92,15 @@ def get_padded_seq(bed_file, fasta):
 def generate_padded_data(bed_file, fasta):
     '''
     Wrapper for generating one-hot-encoded sequences
+
+    return:
+        generator: (one-hot-encoded sequence, label)
     '''
     cdef:
         str seq, na_label
         int label
 
-    for i, (seq, na_label) in enumerate(get_padded_seq(bed_file, fasta)):
+    for i, (seq, na_label) in enumerate(fetch_trainings(bed_file, fasta)):
         if set(seq).issubset(acceptable_nuc):
             label = 1 if na_label == "DNA" else 0
             yield dna_encoder.transform(seq), label
@@ -116,11 +118,14 @@ class data_generator():
         self.fasta = fasta
         self.batch_size = batch_size
         self.half_batch = self.batch_size/2
-        self.generator = get_padded_seq(self.bed, self.fasta)
+        self.generator = self.init_generator()
+
+    def init_generator(self):
+        return fetch_trainings(self.bed, self.fasta)
 
     def data_gen(self):
         '''
-        Populate reponse vector and feature array with desired batch size
+        Populate reponse tensor and feature tensor with desired batch size
         '''
         cdef:
             uint32_t i
@@ -128,15 +133,16 @@ class data_generator():
             double random_frac
             int label
             list X, Y
+            int sample_num
 
         X, Y = [], []
 
         label_counter = defaultdict(int) #make sure classes label is balanced
-        for i in range(self.batch_size):
+        while sample_num < self.batch_size:
             try:
                 seq, na_label = next(self.generator)
             except StopIteration:
-                self.generator = get_padded_seq(self.bed, self.fasta)
+                self.generator = self.init_generator()
                 seq, na_label = next(self.generator)
 
             if set(seq).issubset(acceptable_nuc):
@@ -146,6 +152,8 @@ class data_generator():
                     label = 1 if na_label == "DNA" else 0
                     Y.append(label)
                     label_counter[na_label] += 1
+                    sample_num += 1
+
         return X, Y
 
 
