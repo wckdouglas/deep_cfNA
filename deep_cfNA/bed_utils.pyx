@@ -142,8 +142,8 @@ class data_generator():
         self.sample_num = 0
 
         while self.sample_num < self.batch_size:
-            self.feature_gen(self.RNA_generator, self.RNA)
-            self.feature_gen(self.DNA_generator, self.DNA)
+            self.RNA_generator = self.feature_gen(self.RNA_generator, self.RNA)
+            self.DNA_generator = self.feature_gen(self.DNA_generator, self.DNA)
         return self.X, self.Y
 
 
@@ -168,6 +168,7 @@ class data_generator():
                 self.Y.append(label)
                 self.label_counter[na_label] += 1
                 self.sample_num += 1
+        return feature_generator
 
 
     def __next__(self):
