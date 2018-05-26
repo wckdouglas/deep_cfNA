@@ -110,7 +110,7 @@ class data_generator():
         '''
         Wrapper for generating one-hot-encoded sequences
 
-        return batches
+        return batches with balanced class
         '''
         self.bed = bed_file
         self.fasta = fasta
@@ -131,7 +131,7 @@ class data_generator():
 
         X, Y = [], []
 
-        label_counter = defaultdict(int)
+        label_counter = defaultdict(int) #make sure classes label is balanced
         for i in range(self.batch_size):
             try:
                 seq, na_label = next(self.generator)
