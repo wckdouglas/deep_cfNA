@@ -20,7 +20,7 @@ def getopt():
 
     #add training commands
     training = subparsers.add_parser('train',help='deep_cfNA training')
-    training.add_argument('--train_bed', help='BED file for fragments:  \n'\
+    training.add_argument('--train_bed_positive', help='BED file prefix for fragments, for positive label:  \n'\
                         'For each record in BED file, extract the sequence, and center it \n'\
                         'fill up both sides to length of (seq_length) with Ns.\n' \
                         'Bed files need these columns: \n'\
@@ -32,6 +32,8 @@ def getopt():
                         '6. strand\n'\
                         '7. label: (DNA or RNA)',
                         required=True)
+    training.add_argument('--train_bed_negative', help='BED file prefix for fragments, for negative label \n',
+                          required=True)
     training.add_argument('--validation_bed', help ='bed file for validation')
     training.add_argument('--epoch', default=10, type=int)
     training.add_argument('--genome', help ='genome fasta file (must have faidx)', required=True)
@@ -81,7 +83,9 @@ def training(args):
     '''
     training model with ground truth bed
     '''
-    history, model = training_sample(args.train_bed, args.genome, args.epoch)
+    history, model = training_sample(args.train_bed_positive,
+                                     args.train_bed_negative, 
+                                     args.genome, args.epoch)
 
     if args.model_prefix:
         save_model(model, prefix = args.model_prefix)

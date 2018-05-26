@@ -108,53 +108,66 @@ def generate_padded_data(bed_file, fasta):
 
 class data_generator():
     
-    def __init__(self, bed_file, fasta, batch_size=1000):
+    def __init__(self, bed_pos, bed_neg, fasta, batch_size=1000):
         '''
         Wrapper for generating one-hot-encoded sequences
 
         return batches with balanced class
         '''
-        self.bed = bed_file
-        self.fasta = fasta
         self.batch_size = batch_size
         self.half_batch = self.batch_size/2
-        self.generator = self.init_generator()
+        self.sample_num = 0
+        self.X =[]
+        self.Y =[]
 
-    def init_generator(self):
-        return fetch_trainings(self.bed, self.fasta)
+        self.RNA = bed_pos
+        self.DNA = bed_neg
+        self.fasta = fasta
+        self.RNA_generator = self.init_generator(self.RNA)
+        self.DNA_generator = self.init_generator(self.DNA)
+        self.label_counter = defaultdict(int) #make sure classes label is balanced
+
+    def init_generator(self, bed):
+        return fetch_trainings(bed, self.fasta)
 
     def data_gen(self):
         '''
         Populate reponse tensor and feature tensor with desired batch size
         '''
+
+        # reinitialize batch
+        self.X = []
+        self.Y = []
+        self.label_counter = defaultdict(int) #make sure classes label is balanced
+        self.sample_num = 0
+
+        while self.sample_num < self.batch_size:
+            self.feature_gen(self.RNA_generator, self.RNA)
+            self.feature_gen(self.DNA_generator, self.DNA)
+        return self.X, self.Y
+
+
+    def feature_gen(self, feature_generator, bed):
         cdef:
-            uint32_t i
             str seq, na_label
-            double random_frac
             int label
-            list X, Y
-            int sample_num
 
-        X, Y = [], []
+        try:
+            seq, na_label = next(feature_generator)
+        except StopIteration:
+            feature_generator = self.init_generator(bed)
+            seq, na_label = next(self.RNA_generator)
 
-        label_counter = defaultdict(int) #make sure classes label is balanced
-        while sample_num < self.batch_size:
-            try:
-                seq, na_label = next(self.generator)
-            except StopIteration:
-                self.generator = self.init_generator()
-                seq, na_label = next(self.generator)
+        
+        if set(seq).issubset(acceptable_nuc):
+            random_frac = random.random()
+            if self.label_counter[na_label] <= self.half_batch and random_frac >= 0.5:
+                label = 1 if na_label == "DNA" else 0
 
-            if set(seq).issubset(acceptable_nuc):
-                random_frac = random.random()
-                if label_counter[na_label] <= self.half_batch and random_frac >= 0.5:
-                    X.append(dna_encoder.transform(seq))
-                    label = 1 if na_label == "DNA" else 0
-                    Y.append(label)
-                    label_counter[na_label] += 1
-                    sample_num += 1
-
-        return X, Y
+                self.X.append(dna_encoder.transform(seq))
+                self.Y.append(label)
+                self.label_counter[na_label] += 1
+                self.sample_num += 1
 
 
     def __next__(self):
