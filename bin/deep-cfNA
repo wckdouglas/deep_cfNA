@@ -43,7 +43,6 @@ def getopt():
     validation.add_argument('--genome', help ='genome fasta file (must have faidx)', required=True)
     validation.add_argument('--validation_bed', help ='bed file for validation', required=True)
     validation.add_argument('--model_prefix', help ='where to save the model', required=True)
-    validation.add_argument('--batch_size', help ='batch size for prediction', default = 1000, type=int)
 
 
     #add_test commands
@@ -62,7 +61,6 @@ def getopt():
                         required=True)
     prediction.add_argument('--genome', help ='genome fasta file (must have faidx)', required=True)
     prediction.add_argument('--out', help ='out BED file (default: - )', default = '-')
-    prediction.add_argument('--batch_size', help ='batch size for prediction', default = 1000, type=int)
     default_model_predix = pkg_resources.resource_filename('deep_cfNA', 'model')
     default_model_predix = os.path.dirname(os.path.dirname(default_model_predix)) + "/model/deep_cfNA"
     prediction.add_argument('--model_prefix', default=default_model_predix)
@@ -75,7 +73,7 @@ def validation(args, model):
     validation using a known bed file
     '''
     feature_generator = prediction_generator(args.validation_bed, args.genome, 
-                                                batch_size = args.batch_size)
+                                                batch_size = 1000)
     validation_sample(args.validation_bed, args.genome, model)
 
 
@@ -111,7 +109,7 @@ def prediction(args, model_prefix):
     '''
     Run prediction, needs a loaded keras model, genome and bed file
     '''
-    feature_generator = prediction_generator(args.inbed, args.genome, batch_size = args.batch_size)
+    feature_generator = prediction_generator(args.inbed, args.genome, batch_size = 1000)
 
     #define output
     if args.out == '-' or args.out == "/dev/stdout":
