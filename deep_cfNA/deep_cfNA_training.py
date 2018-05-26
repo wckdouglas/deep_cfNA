@@ -19,7 +19,7 @@ def training_sample(train_bed, fa_file, epochs):
                                                  fa_file, 
                                                 batch_size = 500),
                                   epochs = epochs,
-                                  steps_per_epoch = 50000,
+                                  steps_per_epoch = 10000,
                                   callbacks = [tensorboard])
 
 
