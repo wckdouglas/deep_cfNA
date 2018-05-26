@@ -123,6 +123,8 @@ def prediction(args, model_prefix):
     predict_func = partial(predict_job, model_prefix)
     p = Pool(cpu_count())
     jobs = p.imap(predict_func, feature_generator, chunksize = 10)
+    p.close()
+    p.join()
     for batch, out_lines in enumerate(jobs):
         print(out_lines, file = out)
         if batch % 100 == 0:
