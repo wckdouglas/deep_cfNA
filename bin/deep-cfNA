@@ -41,7 +41,7 @@ def getopt():
 
 
     #add validation command
-    validation = subparsers.add_parser('validation', help='deep_cfNA validation')
+    validation = subparsers.add_parser('validate', help='deep_cfNA validation')
     validation.add_argument('--genome', help ='genome fasta file (must have faidx)', required=True)
     validation.add_argument('--validation_bed', help ='bed file for validation', required=True)
     validation.add_argument('--model_prefix', help ='where to save the model', required=True)
@@ -143,7 +143,7 @@ def main():
         training(args)
 
     else:
-        if args.subcommand == 'validation':
+        if args.subcommand == 'validate':
             model = load_model(args.model_prefix)
             validation(args, model)
 

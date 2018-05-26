@@ -38,7 +38,8 @@ def fetch_validation(test_bed, fa_file, batch_size = 1000):
         labels.append(label)
         if sample_number % batch_size == 0 and sample_number > 0:
             yield np.array(features), np.array(labels)
-            features = [], labels = []
+            features = []
+            labels = []
     
     yield np.array(features), np.array(labels)
 
