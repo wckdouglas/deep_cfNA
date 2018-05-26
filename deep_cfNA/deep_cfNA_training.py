@@ -12,7 +12,7 @@ def training_sample(train_bed_pos, train_bed_neg, fa_file, epochs):
     retrieve data and train
     '''
     
-    tensorboard = TensorBoard(log_dir='./logs', histogram_freq=0,
+    tensorboard = TensorBoard(log_dir='./tensorboard', histogram_freq=0,
                               write_graph=True, write_images=False)
     model = deep_cfNA()
     history = model.fit_generator(data_generator(train_bed_pos, 

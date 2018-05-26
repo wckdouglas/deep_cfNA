@@ -3,7 +3,7 @@ from keras.layers import Dense, Conv1D,\
                          Flatten, MaxPool1D,  \
                          Dropout, LSTM, \
                          Bidirectional
-from deep_cfNA.metrics import f1_metrics
+from deep_cfNA.metrics import f1_score, precision, recall
 from deep_cfNA.bed_utils import frag_size
 import sys
 
@@ -27,7 +27,7 @@ def deep_cfNA():
     model.add(Dense(1, activation='sigmoid'))
     model.compile(loss='binary_crossentropy', 
                 optimizer='rmsprop', 
-                metrics=[f1_metrics,'binary_accuracy'])
+                metrics=[f1_score, precision, recall,'binary_accuracy'])
     return model
 
 def load_model(prefix, message=True):

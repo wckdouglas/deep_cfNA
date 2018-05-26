@@ -156,7 +156,7 @@ class data_generator():
             seq, na_label = next(feature_generator)
         except StopIteration:
             feature_generator = self.init_generator(bed)
-            seq, na_label = next(self.RNA_generator)
+            seq, na_label = next(feature_generator)
 
         
         if set(seq).issubset(acceptable_nuc):
