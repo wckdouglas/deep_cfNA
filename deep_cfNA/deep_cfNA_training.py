@@ -19,34 +19,27 @@ def training_sample(train_bed, fa_file, epochs):
                                                  fa_file, 
                                                 batch_size = 500),
                                   epochs = epochs,
-                                  steps_per_epoch = 1000,
+                                  steps_per_epoch = 50000,
                                   callbacks = [tensorboard])
 
 
     print('Fitted model')
     return history, model
 
-def fetch_validation(test_bed, fa_file, batch_size = 0):
+def fetch_validation(test_bed, fa_file, batch_size = 1000):
     '''
     fetch sequences from test bed file and return feature arrays and test label
     '''
-    label_count = defaultdict(int)
-    if batch_size > 0:
-        features = []
-        labels = []
-        for seq, label in generate_padded_data(test_bed, fa_file):
-            if label_count[label] < batch_size/2:
-                features.append(seq)
-                labels.append(label)
-                label_count[label] += 1
+    features = []
+    labels = []
+    for sample_number, (seq, label) in enumerate(generate_padded_data(test_bed, fa_file)):
+        features.append(seq)
+        labels.append(label)
+        if sample_number % batch_size == 0 and sample_number > 0:
+            yield np.array(features), np.array(labels)
+            features = [], labels = []
     
-    else:
-        data = [data for data in generate_padded_data(test_bed, fa_file)]
-        features, labels = zip(*data)
-
-    features = np.array(features)
-    labels = np.array(labels)
-    return features, labels
+    yield np.array(features), np.array(labels)
 
 
 def validation_sample(test_bed, fa_file, model):
@@ -54,21 +47,32 @@ def validation_sample(test_bed, fa_file, model):
     Test model on unseen data
     '''
     # validation of the model
-    X_test, y_test = fetch_validation(test_bed, fa_file)
-    print('Fetched test samples')
+    true_label = []
+    predicted_prob = []
+    samples = 0
 
-    # make prediction
-    y_pred_prob = model.predict_proba(X_test)
-    y_pred_prob = y_pred_prob.flatten()
+    for X_test, y_test in fetch_validation(test_bed, fa_file):
 
-    y_pred_class = model.predict_classes(X_test)
-    y_pred_class = y_pred_class.flatten()
+        # make prediction
+        y_pred_prob = model.predict_proba(X_test)
+        y_pred_prob = y_pred_prob.flatten()
+        assert(len(y_pred_prob) == len(y_test))
+        predicted_prob.extend(y_pred_prob.tolist())
+        true_label.extend(y_test.tolist())
+        samples += len(y_test)
+
+    predicted_prob = np.array(predicted_prob)
+    true_label = np.array(true_label)
+    assert(predicted_prob.shape == true_label.shape)
+
+    predicted_class = predicted_prob.round()
 
     # evaluation
-    print("[Validation] Precision: %1.3f" % precision_score(y_test, y_pred_class))
-    print("[Validation] Recall: %1.3f" % recall_score(y_test, y_pred_class))
-    print("[Validation] F1: %1.3f" % f1_score(y_test, y_pred_class))
-    print("[Validation] AUROC: %1.3f" % roc_auc_score(y_test, y_pred_prob))
+    print('[Validation] On %i samples:' %samples)
+    print("[Validation] Precision: %1.3f" % precision_score(true_label, predicted_class))
+    print("[Validation] Recall: %1.3f" % recall_score(true_label, predicted_class))
+    print("[Validation] F1: %1.3f" % f1_score(true_label, predicted_class))
+    print("[Validation] AUROC: %1.3f" % roc_auc_score(true_label, predicted_prob))
 
 
 

@@ -43,6 +43,7 @@ def getopt():
     validation.add_argument('--genome', help ='genome fasta file (must have faidx)', required=True)
     validation.add_argument('--validation_bed', help ='bed file for validation', required=True)
     validation.add_argument('--model_prefix', help ='where to save the model', required=True)
+    validation.add_argument('--batch_size', help ='batch size for prediction', default = 1000, type=int)
 
 
     #add_test commands
