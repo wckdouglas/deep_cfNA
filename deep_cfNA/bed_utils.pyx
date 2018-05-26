@@ -82,7 +82,7 @@ def get_padded_seq(bed_file, fasta):
          str seq
 
     genome_fa = pysam.Fastafile(fasta)
-    for line_count, line in enumerate(open(bed_file)):
+    for line_count, line in enumerate(xopen(bed_file,'r')):
         fields = line.rstrip('\n').split('\t')
         chrom, start, end, strand, label = itemgetter(0,1,2,5,-1)(fields)
         if chrom != 'chrM':
