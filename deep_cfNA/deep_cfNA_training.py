@@ -6,7 +6,7 @@ from sklearn.metrics import f1_score, precision_score, recall_score, roc_auc_sco
 from keras.callbacks import TensorBoard
 
 
-def training_sample(train_bed_pos, train_bed_neg, fa_file, epochs):
+def training_sample(train_bed_pos, train_bed_neg, fa_file, epochs, N_padded=True):
     '''
     Set up keras model
     retrieve data and train
@@ -18,7 +18,8 @@ def training_sample(train_bed_pos, train_bed_neg, fa_file, epochs):
     history = model.fit_generator(data_generator(train_bed_pos, 
                                                  train_bed_neg,
                                                  fa_file, 
-                                                batch_size = 500),
+                                                batch_size = 500,
+                                                N_padded = N_padded),
                                   epochs = epochs,
                                   steps_per_epoch = 10000,
                                   callbacks = [tensorboard])

@@ -11,6 +11,7 @@ from sequencing_tools.io_tools import xopen
 from multiprocessing import Pool, cpu_count
 from functools import partial
 import sys
+N_padded = False
 
 def getopt():
     parser = argparse.ArgumentParser(prog=os.path.basename(sys.argv[0]))
@@ -75,7 +76,8 @@ def validation(args, model):
     validation using a known bed file
     '''
     feature_generator = prediction_generator(args.validation_bed, args.genome, 
-                                                batch_size = 1000)
+                                                batch_size = 1000,
+                                             N_padded = N_padded)
     validation_sample(args.validation_bed, args.genome, model)
 
 
@@ -85,7 +87,8 @@ def training(args):
     '''
     history, model = training_sample(args.train_bed_positive,
                                      args.train_bed_negative, 
-                                     args.genome, args.epoch)
+                                     args.genome, args.epoch, 
+                                     N_padded = N_padded)
 
     if args.model_prefix:
         save_model(model, prefix = args.model_prefix)
@@ -113,7 +116,7 @@ def prediction(args, model_prefix):
     '''
     Run prediction, needs a loaded keras model, genome and bed file
     '''
-    feature_generator = prediction_generator(args.inbed, args.genome, batch_size = 1000)
+    feature_generator = prediction_generator(args.inbed, args.genome, batch_size = 1000, N_padded = N_padded)
 
     #define output
     if args.out == '-' or args.out == "/dev/stdout":

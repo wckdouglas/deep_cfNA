@@ -24,7 +24,7 @@ acceptable_nuc = list('ACTGN')
 dna_encoder = onehot_sequence_encoder(''.join(acceptable_nuc))
 
 
-cdef str padded_seq(str chrom, str start_str, str end_str , str strand, genome_fa):
+cdef str padded_seq(str chrom, str start_str, str end_str , str strand, genome_fa, N_padded = True):
     '''
     1. fetch sequence from genome
     2. centering the sequence
@@ -38,7 +38,7 @@ cdef str padded_seq(str chrom, str start_str, str end_str , str strand, genome_f
     start, end = long(start_str), long(end_str)
     seq_length = end - start
 
-    if seq_length < frag_size:
+    if seq_length < frag_size and N_padded:
         padding_base = frag_size - seq_length
         half_padding = int(padding_base/2)
         seq = genome_fa.fetch(chrom, start, end)
@@ -57,7 +57,7 @@ cdef str padded_seq(str chrom, str start_str, str end_str , str strand, genome_f
  
 
 
-def fetch_trainings(bed_file, fasta):
+def fetch_trainings(bed_file, fasta, N_padded=True):
     '''
     For each record in bed file, extract the sequence, and center it
     fill up both sides to length of (seq_length) with Ns.
@@ -84,12 +84,14 @@ def fetch_trainings(bed_file, fasta):
     for line_count, line in enumerate(xopen(bed_file,'r')):
         fields = line.rstrip('\n').split('\t')
         chrom, start, end, strand, label = itemgetter(0,1,2,5,-1)(fields)
-        if chrom != 'chrM':
-            seq = padded_seq(chrom, start, end, strand, genome_fa)
+        if chrom != 'chrM' and \
+                long(start) > frag_size and \
+                long(end) < genome_fa.get_reference_length(chrom) - frag_size:
+            seq = padded_seq(chrom, start, end, strand, genome_fa, N_padded)
             yield seq, label
 
 
-def generate_padded_data(bed_file, fasta):
+def generate_padded_data(bed_file, fasta, N_padded=True):
     '''
     Wrapper for generating one-hot-encoded sequences
 
@@ -100,7 +102,7 @@ def generate_padded_data(bed_file, fasta):
         str seq, na_label
         int label
 
-    for i, (seq, na_label) in enumerate(fetch_trainings(bed_file, fasta)):
+    for i, (seq, na_label) in enumerate(fetch_trainings(bed_file, fasta, N_padded)):
         if set(seq).issubset(acceptable_nuc):
             label = 1 if na_label == "DNA" else 0
             yield dna_encoder.transform(seq), label
@@ -108,7 +110,7 @@ def generate_padded_data(bed_file, fasta):
 
 class data_generator():
     
-    def __init__(self, bed_pos, bed_neg, fasta, batch_size=1000):
+    def __init__(self, bed_pos, bed_neg, fasta, batch_size=1000, N_padded=True):
         '''
         Wrapper for generating one-hot-encoded sequences
 
@@ -119,6 +121,7 @@ class data_generator():
         self.sample_num = 0
         self.X =[]
         self.Y =[]
+        self.N_padded = N_padded
 
         self.RNA = bed_pos
         self.DNA = bed_neg
@@ -128,7 +131,7 @@ class data_generator():
         self.label_counter = defaultdict(int) #make sure classes label is balanced
 
     def init_generator(self, bed):
-        return fetch_trainings(bed, self.fasta)
+        return fetch_trainings(bed, self.fasta, self.N_padded)
 
     def data_gen(self):
         '''
@@ -179,7 +182,7 @@ class data_generator():
         return np.array(X), np.array(Y)
 
 
-def prediction_generator(test_bed, fa_file, batch_size = 1000):
+def prediction_generator(test_bed, fa_file, batch_size = 1000, N_padded=True):
     '''
     parsing each line of a bed file
     fetch sequence and one-hot encode it
@@ -203,8 +206,10 @@ def prediction_generator(test_bed, fa_file, batch_size = 1000):
         for frag_count, bed_line in enumerate(bed):
             fields = bed_line.rstrip('\n').split('\t')
             chrom, start, end, strand = itemgetter(0,1,2,5)(fields)
-            seq = padded_seq(chrom, start, end, strand, genome_fa)
-            if set(seq).issubset(acceptable_nuc):
+            seq = padded_seq(chrom, start, end, strand, genome_fa, N_padded)
+            if set(seq).issubset(acceptable_nuc) and \
+                    long(start) > frag_size and \
+                    long(end) < genome_fa.get_reference_length(chrom) - frag_size:
                 features.append(dna_encoder.transform(seq))
                 lines.append(bed_line.strip())
                 sample_in_batch += 1
