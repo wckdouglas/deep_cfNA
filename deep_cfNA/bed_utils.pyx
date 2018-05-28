@@ -1,4 +1,4 @@
-from __future__ import print_function
+from __future__ import print_function, division
 from operator import itemgetter
 from collections import defaultdict
 from sequencing_tools.fastq_tools import reverse_complement, \
@@ -6,9 +6,14 @@ from sequencing_tools.fastq_tools import reverse_complement, \
 import pysam
 import numpy as np
 import sys
-import random
 from sequencing_tools.io_tools import xopen
 from libc.stdint cimport uint32_t
+from libc.stdlib cimport rand, RAND_MAX
+
+
+cpdef double random():
+    cdef double _random = rand()/RAND_MAX
+    return _random
 
 
 cdef list acceptable_chrom 
@@ -40,13 +45,13 @@ cdef str padded_seq(str chrom, str start_str, str end_str , str strand, genome_f
 
     if seq_length < frag_size and N_padded:
         padding_base = frag_size - seq_length
-        half_padding = int(padding_base/2)
+        half_padding = int(padding_base//2)
         seq = genome_fa.fetch(chrom, start, end)
         seq = seq.upper()
         seq = half_padding * 'N' + seq + (half_padding + 1) * 'N'
 
     else:
-        center = (end + start) / 2
+        center = (end + start) // 2
         seq = genome_fa.fetch(chrom, 
                                 int(center) - int(frag_size/2), 
                                 int(center) + int(frag_size/2))
@@ -163,8 +168,7 @@ class data_generator():
 
         
         if set(seq).issubset(acceptable_nuc):
-            random_frac = random.random()
-            if self.label_counter[na_label] <= self.half_batch and random_frac >= 0.5:
+            if self.label_counter[na_label] <= self.half_batch and random() >= 0.8:
                 label = 1 if na_label == "DNA" else 0
 
                 self.X.append(dna_encoder.transform(seq))
