@@ -6,7 +6,7 @@ from sklearn.metrics import f1_score, precision_score, recall_score, roc_auc_sco
 from keras.callbacks import TensorBoard
 
 
-def training_sample(train_bed_pos, train_bed_neg, fa_file, epochs, N_padded=True):
+def training_sample(train_bed_pos, train_bed_neg, fa_file, epochs, N_padded=True, validation_bed = None):
     '''
     Set up keras model
     retrieve data and train
@@ -15,6 +15,12 @@ def training_sample(train_bed_pos, train_bed_neg, fa_file, epochs, N_padded=True
     tensorboard = TensorBoard(log_dir='./tensorboard', histogram_freq=0,
                               write_graph=True, write_images=False)
     model = Deep_cfNA()
+
+    if validation_bed:
+        validation_generator = fetch_validation(validation_bed, fa_file)
+    else:
+        validation_generator = None
+
     history = model.fit_generator(data_generator(train_bed_pos, 
                                                  train_bed_neg,
                                                  fa_file, 
@@ -22,6 +28,7 @@ def training_sample(train_bed_pos, train_bed_neg, fa_file, epochs, N_padded=True
                                                 N_padded = N_padded),
                                   epochs = epochs,
                                   steps_per_epoch = 10000,
+                                  validation_data = validation_generator,
                                   callbacks = [tensorboard])
 
 

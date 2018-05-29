@@ -7,7 +7,7 @@ from deep_cfNA.metrics import f1_score, precision, recall
 from deep_cfNA.bed_utils import frag_size
 import sys
 
-def deep_cfNA():
+def Deep_cfNA():
     '''
     DanQ model 
     https://github.com/uci-cbcl/DanQ/blob/master/DanQ-JASPAR_train.py

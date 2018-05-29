@@ -88,7 +88,8 @@ def training(args):
     history, model = training_sample(args.train_bed_positive,
                                      args.train_bed_negative, 
                                      args.genome, args.epoch, 
-                                     N_padded = N_padded)
+                                     N_padded = N_padded,
+                                     validation = args.validation_bed)
 
     if args.model_prefix:
         save_model(model, prefix = args.model_prefix)
