@@ -4,8 +4,8 @@ import argparse
 import os
 import pkg_resources
 from deep_cfNA import deep_cfNA_training
-from deep_cfNA.deep_cfNA_model import save_model, load_model
-from deep_cfNA.deep_cfNA_training import training_sample, validation_sample
+from deep_cfNA.model import save_model, load_model
+from deep_cfNA.train import training_sample, validation_sample
 from deep_cfNA.bed_utils import prediction_generator
 from sequencing_tools.io_tools import xopen
 from multiprocessing import Pool, cpu_count

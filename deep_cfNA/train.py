@@ -1,4 +1,4 @@
-from deep_cfNA.deep_cfNA_model import deep_cfNA
+from deep_cfNA.model import Deep_cfNA
 from deep_cfNA.bed_utils import generate_padded_data, data_generator
 from collections import defaultdict
 import numpy as np
