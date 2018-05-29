@@ -18,8 +18,10 @@ def training_sample(train_bed_pos, train_bed_neg, fa_file, epochs, N_padded=True
 
     if validation_bed:
         validation_generator = fetch_validation(validation_bed, fa_file)
+        validation_step = 10
     else:
         validation_generator = None
+        validation_step = None
 
     history = model.fit_generator(data_generator(train_bed_pos, 
                                                  train_bed_neg,
@@ -29,6 +31,7 @@ def training_sample(train_bed_pos, train_bed_neg, fa_file, epochs, N_padded=True
                                   epochs = epochs,
                                   steps_per_epoch = 10000,
                                   validation_data = validation_generator,
+                                  validation_steps = validation_step,
                                   callbacks = [tensorboard])
 
 

@@ -13,7 +13,7 @@ def Deep_cfNA():
     https://github.com/uci-cbcl/DanQ/blob/master/DanQ-JASPAR_train.py
     '''
     model = Sequential()
-    model.add(Conv1D(filters=160, 
+    model.add(Conv1D(filters=10, 
                   kernel_size = 26,
                   strides = 1,
                   padding = 'valid',

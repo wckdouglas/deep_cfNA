@@ -89,7 +89,7 @@ def training(args):
                                      args.train_bed_negative, 
                                      args.genome, args.epoch, 
                                      N_padded = N_padded,
-                                     validation = args.validation_bed)
+                                     validation_bed = args.validation_bed)
 
     if args.model_prefix:
         save_model(model, prefix = args.model_prefix)
@@ -133,7 +133,7 @@ def prediction(args, model_prefix):
     p.close()
     p.join()
     for batch, out_lines in enumerate(jobs):
-        print(out_lines, file = out)
+        out.write(out_lines)
         if batch % 100 == 0:
             print('Processed %i batches' %(batch + 1), file = sys.stderr)
     if not stdout:
