@@ -26,7 +26,7 @@ def Deep_cfNA():
     model.add(Dense(25, activation='relu'))
     model.add(Dense(1, activation='sigmoid'))
     model.compile(loss='binary_crossentropy', 
-                optimizer='rmsprop', 
+                optimizer='Adam', 
                 metrics=[f1_score, precision, recall,'binary_accuracy'])
     return model
 

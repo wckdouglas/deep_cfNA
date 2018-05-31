@@ -19,7 +19,7 @@ def getopt():
                                     dest='subcommand')
     subparsers.required = True
 
-    #add training commands
+    #add training subcommands
     training = subparsers.add_parser('train',help='deep_cfNA training')
     training.add_argument('--train_bed_positive', help='BED file prefix for fragments, for positive label:  \n'\
                         'For each record in BED file, extract the sequence, and center it \n'\
@@ -37,20 +37,20 @@ def getopt():
                           required=True)
     training.add_argument('--validation_bed', help ='bed file for validation')
     training.add_argument('--epoch', default=10, type=int)
-    training.add_argument('--genome', help ='genome fasta file (must have faidx)', required=True)
-    training.add_argument('--model_prefix', help ='where to save the model')
+    training.add_argument('-g','--genome', help ='genome fasta file (must have faidx)', required=True)
+    training.add_argument('-p','--model_prefix', help ='where to save the model')
 
 
-    #add validation command
+    #add validation subcommand
     validation = subparsers.add_parser('validate', help='deep_cfNA validation')
     validation.add_argument('--genome', help ='genome fasta file (must have faidx)', required=True)
     validation.add_argument('--validation_bed', help ='bed file for validation', required=True)
     validation.add_argument('--model_prefix', help ='where to save the model', required=True)
 
 
-    #add_test commands
+    #add_test subcommands
     prediction = subparsers.add_parser('predict', help = 'deep cfNA prediction using existing model')
-    prediction.add_argument('--inbed',help='BED file for fragments:  \n'\
+    prediction.add_argument('-i','--inbed',help='BED file for fragments:  \n'\
                         'For each record in BED file, extract the sequence, and center it \n'\
                         'fill up both sides to length of (seq_length) with Ns.\n' \
                         'Bed files need these columns: \n'\
@@ -62,11 +62,11 @@ def getopt():
                         '6. strand\n'\
                         '7. label: (DNA or RNA)',
                         required=True)
-    prediction.add_argument('--genome', help ='genome fasta file (must have faidx)', required=True)
-    prediction.add_argument('--out', help ='out BED file (default: - )', default = '-')
+    prediction.add_argument('-g','--genome', help ='genome fasta file (must have faidx)', required=True)
+    prediction.add_argument('-o','--out', help ='out BED file (default: - )', default = '-')
     default_model_predix = pkg_resources.resource_filename('deep_cfNA', 'model')
     default_model_predix = os.path.dirname(os.path.dirname(default_model_predix)) + "/model/deep_cfNA"
-    prediction.add_argument('--model_prefix', default=default_model_predix)
+    prediction.add_argument('-p','--model_prefix', default=default_model_predix)
 
     return parser.parse_args()
 
