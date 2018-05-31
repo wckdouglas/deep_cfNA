@@ -90,7 +90,7 @@ def training(args):
                                      args.train_bed_negative, 
                                      args.genome, 
                                      steps = args.steps,
-                                     epochs = args.epoch, 
+                                     epochs = args.epochs, 
                                      N_padded = N_padded,
                                      validation_bed = args.validation_bed)
 
