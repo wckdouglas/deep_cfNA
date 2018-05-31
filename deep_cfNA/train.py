@@ -1,5 +1,5 @@
 from deep_cfNA.model import Deep_cfNA
-from deep_cfNA.bed_utils import generate_padded_data, data_generator
+from deep_cfNA.bed_utils import generate_padded_data, data_generator, random
 from collections import defaultdict
 import numpy as np
 from sklearn.metrics import f1_score, precision_score, recall_score, roc_auc_score
@@ -7,8 +7,8 @@ from keras.callbacks import TensorBoard
 
 
 def training_sample(train_bed_pos, train_bed_neg, fa_file, 
-                    steps = steps,
-                    epochs = epochs, 
+                    steps = 10000,
+                    epochs = 5, 
                     N_padded=True, validation_bed = None):
     '''
     Set up keras model
@@ -21,7 +21,7 @@ def training_sample(train_bed_pos, train_bed_neg, fa_file,
 
     if validation_bed:
         validation_generator = fetch_validation(validation_bed, fa_file)
-        validation_step = 10
+        validation_step = 50
     else:
         validation_generator = None
         validation_step = None
@@ -48,12 +48,13 @@ def fetch_validation(test_bed, fa_file, batch_size = 1000):
     features = []
     labels = []
     for sample_number, (seq, label) in enumerate(generate_padded_data(test_bed, fa_file)):
-        features.append(seq)
-        labels.append(label)
-        if sample_number % batch_size == 0 and sample_number > 0:
-            yield np.array(features), np.array(labels)
-            features = []
-            labels = []
+        if random() > 0.5:
+            features.append(seq)
+            labels.append(label)
+            if sample_number % batch_size == 0 and sample_number > 0:
+                yield np.array(features), np.array(labels)
+                features = []
+                labels = []
     
     yield np.array(features), np.array(labels)
 
