@@ -37,6 +37,7 @@ def getopt():
                           required=True)
     training.add_argument('--validation_bed', help ='bed file for validation')
     training.add_argument('--epoch', default=10, type=int)
+    training.add_argument('--steps', default=10000, type=int)
     training.add_argument('-g','--genome', help ='genome fasta file (must have faidx)', required=True)
     training.add_argument('-p','--model_prefix', help ='where to save the model')
 
@@ -87,7 +88,9 @@ def training(args):
     '''
     history, model = training_sample(args.train_bed_positive,
                                      args.train_bed_negative, 
-                                     args.genome, args.epoch, 
+                                     args.genome, 
+                                     epochs = args.epoch, 
+                                     steps = args.steps,
                                      N_padded = N_padded,
                                      validation_bed = args.validation_bed)
 
