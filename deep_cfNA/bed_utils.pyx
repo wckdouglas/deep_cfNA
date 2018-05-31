@@ -27,8 +27,8 @@ acceptable_chrom = ['chr' + str(chrom) for chrom in acceptable_chrom]
 frag_size = 400 #length of the one-hot sequence
 acceptable_nuc = list('ACTGN')
 dna_encoder = onehot_sequence_encoder(''.join(acceptable_nuc))
-label_encoder = {'DNA':0,
-                 'RNA':1}
+label_encoder = {'DNA':1,
+                 'RNA':0}
 
 
 cdef str padded_seq(str chrom, str start_str, str end_str , str strand, genome_fa, N_padded = True):
