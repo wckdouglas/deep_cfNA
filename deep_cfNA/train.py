@@ -9,6 +9,7 @@ from keras.callbacks import TensorBoard
 def training_sample(train_bed_pos, train_bed_neg, fa_file, 
                     steps = 10000,
                     epochs = 5, 
+                    model = Deep_cfNA(),
                     N_padded=True, validation_bed = None):
     '''
     Set up keras model
@@ -17,11 +18,21 @@ def training_sample(train_bed_pos, train_bed_neg, fa_file,
     
     tensorboard = TensorBoard(log_dir='./tensorboard', histogram_freq=0,
                               write_graph=True, write_images=False)
-    model = Deep_cfNA()
 
     if validation_bed:
         validation_generator = fetch_validation(validation_bed, fa_file)
-        validation_step = 50
+        X_val, Y_val = [], []
+        try:
+            while True:
+                x, y = next(validation_generator)
+                X_val.extend(x)
+                Y_val.extend(y)
+        except StopIteration:
+            pass
+        
+        X_val, Y_val = np.array(X_val), np.array(Y_val)
+        print('Fetched validation data')
+
     else:
         validation_generator = None
         validation_step = None
@@ -33,8 +44,7 @@ def training_sample(train_bed_pos, train_bed_neg, fa_file,
                                                 N_padded = N_padded),
                                   epochs = epochs,
                                   steps_per_epoch = steps,
-                                  validation_data = validation_generator,
-                                  validation_steps = validation_step,
+                                  validation_data = (X_val, Y_val),
                                   callbacks = [tensorboard])
 
 

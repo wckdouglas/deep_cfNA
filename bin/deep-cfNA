@@ -4,7 +4,7 @@ import argparse
 import os
 import pkg_resources
 from deep_cfNA import deep_cfNA_training
-from deep_cfNA.model import save_model, load_model
+from deep_cfNA.model import save_model, load_model, Deep_cfNA
 from deep_cfNA.train import training_sample, validation_sample
 from deep_cfNA.bed_utils import prediction_generator
 from sequencing_tools.io_tools import xopen
@@ -40,6 +40,8 @@ def getopt():
     training.add_argument('--steps', default=10000, type=int, help = 'How many steps per epoch (500 samples/step)')
     training.add_argument('-g','--genome', help ='genome fasta file (must have faidx)', required=True)
     training.add_argument('-p','--model_prefix', help ='where to save the model')
+    training.add_argument('--update', help ='Supply with model prefix to keep training the same model', 
+                          action='store_true')
 
 
     #add validation subcommand
@@ -86,11 +88,20 @@ def training(args):
     '''
     training model with ground truth bed
     '''
+    if args.update:
+        try:
+            model = load_model(args.model_prefix)
+        except FileNotFoundError:
+            sys.exit('Model not found: %s' %(args.model_prefix))
+    else:
+        model = Deep_cfNA()
+
     history, model = training_sample(args.train_bed_positive,
                                      args.train_bed_negative, 
                                      args.genome, 
                                      steps = args.steps,
                                      epochs = args.epochs, 
+                                     model = model,
                                      N_padded = N_padded,
                                      validation_bed = args.validation_bed)
 
