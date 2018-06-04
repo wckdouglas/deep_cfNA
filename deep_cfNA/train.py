@@ -3,7 +3,7 @@ from deep_cfNA.bed_utils import generate_padded_data, data_generator, random
 from collections import defaultdict
 import numpy as np
 from sklearn.metrics import f1_score, precision_score, recall_score, roc_auc_score
-from keras.callbacks import TensorBoard
+from keras.callbacks import TensorBoard, EarlyStopping
 
 
 def training_sample(train_bed_pos, train_bed_neg, fa_file, 
@@ -18,6 +18,7 @@ def training_sample(train_bed_pos, train_bed_neg, fa_file,
     
     tensorboard = TensorBoard(log_dir='./tensorboard', histogram_freq=0,
                               write_graph=True, write_images=False)
+    callbacks = [tensorboard]
 
     if validation_bed:
         validation_generator = fetch_validation(validation_bed, fa_file)
@@ -31,7 +32,10 @@ def training_sample(train_bed_pos, train_bed_neg, fa_file,
             pass
         
         X_val, Y_val = np.array(X_val), np.array(Y_val)
-        print('Fetched n=%i validation data' %(len(Y_val)))
+
+        early_stop = EarlyStopping(monitor='val_loss')
+        callbacks.append(early_stop)
+        print('[Using early stop] Fetched n=%i validation data' %(len(Y_val)))
 
     else:
         validation_generator = None
@@ -45,7 +49,7 @@ def training_sample(train_bed_pos, train_bed_neg, fa_file,
                                   epochs = epochs,
                                   steps_per_epoch = steps,
                                   validation_data = (X_val, Y_val),
-                                  callbacks = [tensorboard])
+                                  callbacks = callbacks)
 
 
     print('Fitted model')
