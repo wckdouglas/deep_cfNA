@@ -31,7 +31,7 @@ def training_sample(train_bed_pos, train_bed_neg, fa_file,
             pass
         
         X_val, Y_val = np.array(X_val), np.array(Y_val)
-        print('Fetched validation data')
+        print('Fetched n=%i validation data' %(len(Y_val)))
 
     else:
         validation_generator = None
