@@ -58,13 +58,12 @@ def fetch_validation(test_bed, fa_file, batch_size = 1000):
     features = []
     labels = []
     for sample_number, (seq, label) in enumerate(generate_padded_data(test_bed, fa_file)):
-        if random() > 0.5:
-            features.append(seq)
-            labels.append(label)
-            if sample_number % batch_size == 0 and sample_number > 0:
-                yield np.array(features), np.array(labels)
-                features = []
-                labels = []
+        features.append(seq)
+        labels.append(label)
+        if sample_number % batch_size == 0 and sample_number > 0:
+            yield np.array(features), np.array(labels)
+            features = []
+            labels = []
     
     yield np.array(features), np.array(labels)
 
