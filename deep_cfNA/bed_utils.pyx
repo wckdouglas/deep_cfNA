@@ -9,6 +9,10 @@ import sys
 from sequencing_tools.io_tools import xopen
 from libc.stdint cimport uint32_t
 from libc.stdlib cimport rand, RAND_MAX
+cdef extern from "stdlib.h":
+    double drand48()
+    void srand48(long int seedval)
+
 
 
 cpdef double random():
@@ -117,7 +121,8 @@ def generate_padded_data(bed_file, fasta, N_padded=True):
 
 class data_generator():
     
-    def __init__(self, bed_pos, bed_neg, fasta, batch_size=1000, N_padded=True):
+    def __init__(self, bed_pos, bed_neg, fasta, 
+                 batch_size=1000, N_padded=True, seed = 0):
         '''
         Wrapper for generating one-hot-encoded sequences
 
@@ -136,6 +141,8 @@ class data_generator():
         self.RNA_generator = self.init_generator(self.RNA)
         self.DNA_generator = self.init_generator(self.DNA)
         self.label_counter = defaultdict(int) #make sure classes label is balanced
+        srand48(seed)
+
 
     def init_generator(self, bed):
         return fetch_trainings(bed, self.fasta, self.N_padded)
