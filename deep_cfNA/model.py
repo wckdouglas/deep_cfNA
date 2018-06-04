@@ -15,7 +15,7 @@ class Deep_cfNA():
 
     def __init__(self):
         self.model = Sequential()
-        self.model.add(Conv1D(filters=10, 
+        self.model.add(Conv1D(filters=60, 
                       kernel_size = 26,
                       strides = 1,
                       padding = 'valid',

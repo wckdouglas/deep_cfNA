@@ -21,25 +21,25 @@ def training_sample(train_bed_pos, train_bed_neg, fa_file,
     callbacks = [tensorboard]
 
     if validation_bed:
-        validation_generator = fetch_validation(validation_bed, fa_file)
+        '''
+        get all records from validation
+        '''
         X_val, Y_val = [], []
-        try:
-            while True:
-                x, y = next(validation_generator)
-                X_val.extend(x)
-                Y_val.extend(y)
-        except StopIteration:
-            pass
+        for x, y in fetch_validation(validation_bed, fa_file):
+            X_val.extend(x)
+            Y_val.extend(y)
         
         X_val, Y_val = np.array(X_val), np.array(Y_val)
+        validation_data = (X_val, Y_val)
 
         early_stop = EarlyStopping(monitor='val_loss')
-        callbacks.append(early_stop)
         print('[Using early stop] Fetched n=%i validation data' %(len(Y_val)))
 
     else:
-        validation_generator = None
+        validation_data = None
         validation_step = None
+        early_stop = EarlyStopping(monitor='loss')
+    callbacks.append(early_stop)
 
     history = model.fit_generator(data_generator(train_bed_pos, 
                                                  train_bed_neg,
@@ -48,7 +48,7 @@ def training_sample(train_bed_pos, train_bed_neg, fa_file,
                                                 N_padded = N_padded),
                                   epochs = epochs,
                                   steps_per_epoch = steps,
-                                  validation_data = (X_val, Y_val),
+                                  validation_data = validation_data,
                                   callbacks = callbacks)
 
 
