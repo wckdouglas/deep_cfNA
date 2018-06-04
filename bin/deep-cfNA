@@ -4,7 +4,7 @@ import argparse
 import os
 import pkg_resources
 from deep_cfNA import deep_cfNA_training
-from deep_cfNA.model import save_model, load_model, Deep_cfNA
+from deep_cfNA.model import Deep_cfNA
 from deep_cfNA.train import training_sample, validation_sample
 from deep_cfNA.bed_utils import prediction_generator
 from sequencing_tools.io_tools import xopen
@@ -88,14 +88,15 @@ def training(args):
     '''
     training model with ground truth bed
     '''
+
+    model = Deep_cfNA()
     if args.update:
         try:
-            model = load_model(args.model_prefix)
+            model.load_model(args.model_prefix)
+            print('Updating %s' %args.model_prefix)
         except FileNotFoundError:
             sys.exit('Model not found: %s' %(args.model_prefix))
-    else:
-        model = Deep_cfNA()
-
+    model.compile()
     history, model = training_sample(args.train_bed_positive,
                                      args.train_bed_negative, 
                                      args.genome, 
@@ -106,7 +107,7 @@ def training(args):
                                      validation_bed = args.validation_bed)
 
     if args.model_prefix:
-        save_model(model, prefix = args.model_prefix)
+        model.save_model(prefix = args.model_prefix)
 
     if args.validation_bed:
         validation(args, model)
@@ -117,7 +118,8 @@ def predict_job(model_prefix, arg):
     Actual work for predicting in batch
     '''
     features, bed_lines = arg
-    model = load_model(model_prefix, message=False)
+    model = Deep_cfNA()
+    model.load_model(model_prefix, message=False)
     predictions = model.predict_classes(features)
     out_lines = ''
     for prediction, bed_line in zip(predictions, bed_lines):
@@ -162,7 +164,8 @@ def main():
 
     else:
         if args.subcommand == 'validate':
-            model = load_model(args.model_prefix)
+            model = Deep_cfNA()
+            model.load_model(args.model_prefix)
             validation(args, model)
 
         elif args.subcommand == 'predict':
