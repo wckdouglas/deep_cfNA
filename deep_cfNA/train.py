@@ -31,13 +31,13 @@ def training_sample(train_bed_pos, train_bed_neg, fa_file,
         
         X_val, Y_val = np.array(X_val), np.array(Y_val)
         validation_data = (X_val, Y_val)
+        Y_val = Y_val.reshape(-1,1)
 
         early_stop = EarlyStopping(monitor='val_loss')
         print('[Using early stop] Fetched n=%i validation data' %(len(Y_val)))
 
     else:
         validation_data = None
-        validation_step = None
         early_stop = EarlyStopping(monitor='loss')
     callbacks.append(early_stop)
 
