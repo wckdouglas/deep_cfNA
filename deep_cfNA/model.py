@@ -15,13 +15,13 @@ class Deep_cfNA():
 
     def __init__(self):
         self.model = Sequential()
-        self.model.add(Conv1D(filters=60, 
+        self.model.add(Conv1D(filters=160, 
                       kernel_size = 26,
                       strides = 1,
                       padding = 'valid',
                       input_shape = (frag_size,5),
                       activation = 'relu'))
-        self.model.add(MaxPool1D(pool_size=50, strides=13))
+        self.model.add(MaxPool1D(pool_size=40, strides=12))
         self.model.add(Dropout(0.2))
         self.model.add(Bidirectional(LSTM(64)))
         self.model.add(Dropout(0.5))
@@ -34,11 +34,17 @@ class Deep_cfNA():
         '''
         self.model.compile(loss='binary_crossentropy', 
                     optimizer='RMSprop', 
-                    metrics=[f1_score, precision, recall,'binary_accuracy'])
+                    metrics=[f1_score, 
+                             precision, 
+                             recall,
+                             'binary_accuracy'])
 
 
     def predict_classes(self, *args, **kwargs):
         return self.model.predict_classes(*args, **kwargs)
+
+    def predict(self, *args, **kwargs):
+        return self.model.predict_proba(*args, **kwargs)
 
 
     def predict_proba(self, *args, **kwargs):

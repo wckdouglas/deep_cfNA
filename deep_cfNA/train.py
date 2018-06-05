@@ -33,7 +33,7 @@ def training_sample(train_bed_pos, train_bed_neg, fa_file,
         Y_val = Y_val.reshape(-1,1)
         validation_data = (X_val, Y_val)
 
-        early_stop = EarlyStopping(monitor='val_loss')
+        early_stop = EarlyStopping(monitor='loss') #val loss doesnt help
         print('[Using early stop] Fetched n=%i validation data' %(len(Y_val)))
 
     else:
@@ -41,15 +41,22 @@ def training_sample(train_bed_pos, train_bed_neg, fa_file,
         early_stop = EarlyStopping(monitor='loss')
     callbacks.append(early_stop)
 
-    history = model.fit_generator(data_generator(train_bed_pos, 
-                                                 train_bed_neg,
-                                                 fa_file, 
-                                                batch_size = 500,
-                                                N_padded = N_padded),
+
+    #get train data generator
+    train_data = data_generator(train_bed_pos, 
+                             train_bed_neg,
+                             fa_file, 
+                             batch_size = 500,
+                             N_padded = N_padded)
+
+    #Training here
+    history = model.fit_generator(train_data,
                                   epochs = epochs,
                                   steps_per_epoch = steps,
                                   validation_data = validation_data,
                                   callbacks = callbacks)
+    y_pred = model.predict(X_val)
+    print(Y_val.shape, y_pred.shape)
 
 
     print('Fitted model')
