@@ -25,6 +25,7 @@ class Deep_cfNA():
         self.model.add(Dropout(0.2))
         self.model.add(Bidirectional(LSTM(64)))
         self.model.add(Dropout(0.5))
+        self.model.add(Dense(50, activation='relu'))
         self.model.add(Dense(25, activation='relu'))
         self.model.add(Dense(1, activation='sigmoid'))
     
@@ -33,7 +34,7 @@ class Deep_cfNA():
         compile keras model
         '''
         self.model.compile(loss='binary_crossentropy', 
-                    optimizer='RMSprop', 
+                    optimizer='Adam', 
                     metrics=[f1_score, 
                              precision, 
                              recall,
