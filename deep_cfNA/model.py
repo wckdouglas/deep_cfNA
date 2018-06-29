@@ -20,13 +20,15 @@ class Deep_cfNA():
                       strides = 1,
                       padding = 'valid',
                       input_shape = (frag_size,5),
-                      activation = 'relu'))
-        self.model.add(MaxPool1D(pool_size=40, strides=12))
-        self.model.add(Dropout(0.2))
-        self.model.add(Bidirectional(LSTM(64)))
-        self.model.add(Dropout(0.5))
-        self.model.add(Dense(50, activation='relu'))
+                      activation = 'relu')) # no padding: output Tensor: (-1, 375, 160)
+        self.model.add(MaxPool1D(pool_size=40, strides=12)) #pooled: (-1, ,160)
+        self.model.add(Dropout(0.2)) #only happens during training
+        self.model.add(Bidirectional(LSTM(64))) #output (-1, 128)
+        self.model.add(Dropout(0.5)) 
+        self.model.add(Dense(50, activation='relu')) 
         self.model.add(Dense(25, activation='relu'))
+        self.model.add(Dropout(0.2)) 
+        self.model.add(Dense(10, activation='relu'))
         self.model.add(Dense(1, activation='sigmoid'))
     
     def compile(self):

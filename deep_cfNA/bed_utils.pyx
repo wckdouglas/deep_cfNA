@@ -192,7 +192,8 @@ class data_generator():
         generator for Keras fit_generator
         '''
         X, Y = self.data_gen()
-        return np.array(X), np.array(Y)
+        idx = np.random.permutation(len(Y))
+        return np.array(X)[idx], np.array(Y)[idx]
 
 
 def prediction_generator(test_bed, fa_file, batch_size = 1000, N_padded=True):
