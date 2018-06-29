@@ -23,7 +23,8 @@ class Deep_cfNA():
                       activation = 'relu')) # no padding: output Tensor: (-1, 375, 160)
         self.model.add(MaxPool1D(pool_size=40, strides=12)) #pooled: (-1, ,160)
         self.model.add(Dropout(0.2)) #only happens during training
-        self.model.add(Bidirectional(LSTM(64))) #output (-1, 128)
+        self.model.add(Bidirectional(LSTM(64, return_sequences=True))) #output (-1, 128)
+        self.model.add(Flatten())
         self.model.add(Dropout(0.5)) 
         self.model.add(Dense(50, activation='relu')) 
         self.model.add(Dense(25, activation='relu'))
