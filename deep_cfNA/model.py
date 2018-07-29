@@ -14,29 +14,48 @@ class Deep_cfNA():
     '''
 
     def __init__(self):
-        self.model = Sequential()
-        self.model.add(Conv1D(filters=160, 
+        self.Model = Sequential()
+        self.Model.add(Conv1D(filters=160, 
                       kernel_size = 26,
                       strides = 1,
                       padding = 'valid',
                       input_shape = (frag_size,5),
+                      use_bias=False,
                       activation = 'relu')) # no padding: output Tensor: (-1, 375, 160)
-        self.model.add(MaxPool1D(pool_size=40, strides=12)) #pooled: (-1, ,160)
-        self.model.add(Dropout(0.2)) #only happens during training
-        self.model.add(Bidirectional(LSTM(64, return_sequences=True))) #output (-1, 128)
-        self.model.add(Flatten())
-        self.model.add(Dropout(0.5)) 
-        self.model.add(Dense(50, activation='relu')) 
-        self.model.add(Dense(25, activation='relu'))
-        self.model.add(Dropout(0.2)) 
-        self.model.add(Dense(10, activation='relu'))
-        self.model.add(Dense(1, activation='sigmoid'))
+        self.Model.add(MaxPool1D(pool_size=40, strides=12)) #pooled: (-1, ,160)
+        self.Model.add(Dropout(0.2)) #only happens during training
+        self.Model.add(Bidirectional(LSTM(64, return_sequences=True))) #output (-1, 128)
+        self.Model.add(Flatten())
+        self.Model.add(Dropout(0.5)) 
+        self.Model.add(Dense(50, activation='relu')) 
+        self.Model.add(Dense(25, activation='relu'))
+        self.Model.add(Dropout(0.2)) 
+        self.Model.add(Dense(10, activation='relu'))
+        self.Model.add(Dense(1, activation='sigmoid'))
+
+
+    def reduced_model(self):
+        self.Model = Sequential()
+        self.Model.add(Conv1D(filters=160, 
+                      kernel_size = 26,
+                      strides = 1,
+                      padding = 'valid',
+                      input_shape = (frag_size,5),
+                      use_bias=False,
+                      activation = 'relu')) # no padding: output Tensor: (-1, 375, 160)
+        self.Model.add(MaxPool1D(pool_size=40, strides=12)) #pooled: (-1, ,160)
+        self.Model.add(Dropout(0.2)) #only happens during training
+        self.Model.add(Flatten())
+        self.Model.add(Dense(50, activation='relu'))
+        self.Model.add(Dropout(0.2)) 
+        self.Model.add(Dense(1, activation='sigmoid'))
+    
     
     def compile(self):
         '''
         compile keras model
         '''
-        self.model.compile(loss='binary_crossentropy', 
+        self.Model.compile(loss='binary_crossentropy', 
                     optimizer='Adam', 
                     metrics=[f1_score, 
                              precision, 
@@ -45,25 +64,25 @@ class Deep_cfNA():
 
 
     def predict_classes(self, *args, **kwargs):
-        return self.model.predict_classes(*args, **kwargs)
+        return self.Model.predict_classes(*args, **kwargs)
 
     def predict(self, *args, **kwargs):
-        return self.model.predict_proba(*args, **kwargs)
+        return self.Model.predict_proba(*args, **kwargs)
 
 
     def predict_proba(self, *args, **kwargs):
-        return self.model.predict_proba(*args, **kwargs)
+        return self.Model.predict_proba(*args, **kwargs)
 
     def fit_generator(self,*args, **kwargs):
-        return self.model.fit_generator(*args, **kwargs)
+        return self.Model.fit_generator(*args, **kwargs)
 
     def load_model(self, prefix, message=True):
         '''
         keras load model
         '''
         json = open(prefix + '_architecture.json', 'r').read()
-        self.model = model_from_json(json)
-        self.model.load_weights(prefix + '_weights.h5')
+        self.Model = model_from_json(json)
+        self.Model.load_weights(prefix + '_weights.h5')
         if message:
             print('Loaded model: %s' %prefix, file = sys.stderr)
 
@@ -73,13 +92,13 @@ class Deep_cfNA():
         keras save model, weight
         '''
         weight_h5 = prefix + '_weights.h5'
-        self.model.save_weights(weight_h5)
+        self.Model.save_weights(weight_h5)
         print('Saved weights to %s' %weight_h5, file = sys.stderr)
 
         # Save the model architecture
         model_json = prefix + '_architecture.json'
         with open(model_json, 'w') as f:
-            f.write(self.model.to_json())
+            f.write(self.Model.to_json())
 
         print('Saved model to %s' %model_json, file = sys.stderr)
 
