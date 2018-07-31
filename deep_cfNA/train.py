@@ -62,10 +62,8 @@ def training_sample(train_bed_pos, train_bed_neg, fa_file,
     print('Fitted model')
     return history, model
 
-def fetch_validation(test_bed, fa_file, batch_size = 1000):
-    '''
-    fetch sequences from test bed file and return feature arrays and test label
-    '''
+
+def feature_generator(test_bed, fa_file, batch_size):
     features = []
     labels = []
     for sample_number, (seq, label) in enumerate(generate_padded_data(test_bed, fa_file)):
@@ -77,6 +75,30 @@ def fetch_validation(test_bed, fa_file, batch_size = 1000):
             labels = []
     
     yield np.array(features), np.array(labels)
+    
+
+
+def fetch_validation(test_bed, fa_file, batch_size = 1000):
+    '''
+    fetch sequences from test bed file and return feature arrays and test label
+    if batch_size <= 0, then return full data
+    '''
+    features = []
+    labels = []
+
+    if batch_size > 0:
+        # return generator
+        return(feature_generator(test_bed, fa_file, batch_size))
+
+    else:
+        # return full data
+        print('Using full data')
+        data = [data for data in generate_padded_data(test_bed, fa_file)]
+        features, labels = list(zip(*data))
+
+        features = np.array(features)
+        labels = np.array(labels)
+        return features, labels
 
 
 def validation_sample(test_bed, fa_file, model):

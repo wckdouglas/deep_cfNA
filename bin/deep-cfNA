@@ -40,7 +40,10 @@ def getopt():
     training.add_argument('--steps', default=10000, type=int, help = 'How many steps per epoch (500 samples/step)')
     training.add_argument('-g','--genome', help ='genome fasta file (must have faidx)', required=True)
     training.add_argument('-p','--model_prefix', help ='where to save the model')
-    training.add_argument('--update', help ='Supply with model prefix to keep training the same model', 
+    training.add_argument('--update', 
+                          help ='Supply with model prefix to keep training the same model', 
+                          action='store_true')
+    training.add_argument('--reduced_model', help = 'Using a reduced model', 
                           action='store_true')
 
 
@@ -49,6 +52,8 @@ def getopt():
     validation.add_argument('--genome', help ='genome fasta file (must have faidx)', required=True)
     validation.add_argument('--validation_bed', help ='bed file for validation', required=True)
     validation.add_argument('--model_prefix', help ='where to save the model', required=True)
+    validation.add_argument('--reduced_model', help = 'Using a reduced model', 
+                          action='store_true')
 
 
     #add_test subcommands
@@ -70,6 +75,8 @@ def getopt():
     default_model_predix = pkg_resources.resource_filename('deep_cfNA', 'model')
     default_model_predix = os.path.dirname(os.path.dirname(default_model_predix)) + "/model/deep_cfNA"
     prediction.add_argument('-p','--model_prefix', default=default_model_predix)
+    prediction.add_argument('--reduced_model', help = 'Using a reduced model', 
+                          action='store_true')
 
     return parser.parse_args()
 
@@ -89,7 +96,7 @@ def training(args):
     training model with ground truth bed
     '''
 
-    model = Deep_cfNA()
+    model = Deep_cfNA(reduced_model = True) if args.reduced_model else Deep_cfNA()
     if args.update:
         try:
             model.load_model(args.model_prefix)
@@ -113,12 +120,12 @@ def training(args):
         validation(args, model)
 
 
-def predict_job(model_prefix, arg):
+def predict_job(model_prefix, reduced_model, arg):
     '''
     Actual work for predicting in batch
     '''
     features, bed_lines = arg
-    model = Deep_cfNA()
+    model = Deep_cfNA(reduced_model = True) if reduced_model else Deep_cfNA()
     model.load_model(model_prefix, message=False)
     predictions = model.predict_classes(features)
     out_lines = ''
@@ -143,7 +150,7 @@ def prediction(args, model_prefix):
         out = xopen(args.out, 'w')
         stdout = False
 
-    predict_func = partial(predict_job, model_prefix)
+    predict_func = partial(predict_job, model_prefix, args.reduced_model)
     p = Pool(cpu_count())
     jobs = p.imap_unordered(predict_func, feature_generator, chunksize = 10)
     p.close()
@@ -164,7 +171,7 @@ def main():
 
     else:
         if args.subcommand == 'validate':
-            model = Deep_cfNA()
+            model = Deep_cfNA(reduced_model = True) if args.reduced_model else Deep_cfNA()
             model.load_model(args.model_prefix)
             validation(args, model)
 
