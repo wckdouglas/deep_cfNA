@@ -1,5 +1,5 @@
-from deep_cfNA.model import Deep_cfNA
-from deep_cfNA.bed_utils import generate_padded_data, data_generator, random
+from .model import Deep_cfNA
+from .bed_utils import generate_padded_data, data_generator, random
 from collections import defaultdict
 import numpy as np
 from sklearn.metrics import f1_score, precision_score, recall_score, roc_auc_score

@@ -3,8 +3,8 @@ from keras.layers import Dense, Conv1D,\
                          Flatten, MaxPool1D,  \
                          Dropout, LSTM, \
                          Bidirectional
-from deep_cfNA.metrics import f1_score, precision, recall
-from deep_cfNA.bed_utils import frag_size
+from .metrics import f1_score, precision, recall
+from .bed_utils import frag_size
 import sys
 
 class Deep_cfNA():
