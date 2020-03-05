@@ -36,14 +36,14 @@ class Deep_cfNA():
             self.Model.add(Dense(1, activation='sigmoid'))
 
         else:
-            self.Model.add(Conv1D(filters=160, 
-                          kernel_size = 26,
+            self.Model.add(Conv1D(filters=50, 
+                          kernel_size = 13,
                           strides = 1,
                           padding = 'valid',
                           input_shape = (frag_size,5),
                           use_bias=False,
                           activation = 'relu')) # no padding: output Tensor: (-1, 375, 160)
-            self.Model.add(MaxPool1D(pool_size=40, strides=12)) #pooled: (-1, ,160)
+            self.Model.add(MaxPool1D(pool_size=20, strides=12)) #pooled: (-1, ,160)
             self.Model.add(Dropout(0.2)) #only happens during training
             self.Model.add(Flatten())
             self.Model.add(Dense(50, activation='relu'))

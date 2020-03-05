@@ -8,16 +8,14 @@ import numpy as np
 import sys
 from sequencing_tools.io_tools import xopen
 from libc.stdint cimport uint32_t
+import torch
 from libc.stdlib cimport rand, RAND_MAX
 cdef extern from "stdlib.h":
     double drand48()
     void srand48(long int seedval)
 
-
-
 cpdef double random():
-    cdef double _random = rand()/RAND_MAX
-    return _random
+    return rand()/RAND_MAX
 
 
 cdef list acceptable_chrom 
@@ -31,10 +29,8 @@ acceptable_chrom = ['chr' + str(chrom) for chrom in acceptable_chrom]
 frag_size = 400 #length of the one-hot sequence
 acceptable_nuc = list('ACTGN')
 dna_encoder = onehot_sequence_encoder(''.join(acceptable_nuc))
-#label_encoder = {'DNA':0,
-#                 'RNA':1}
-label_encoder = {'DNA':1,
-                 'RNA':0}
+label_encoder = {'DNA':0,
+                 'RNA':1}
 
 
 cdef str padded_seq(str chrom, str start_str, str end_str , str strand, genome_fa, N_padded = True):
@@ -61,8 +57,8 @@ cdef str padded_seq(str chrom, str start_str, str end_str , str strand, genome_f
     else:
         center = (end + start) // 2
         seq = genome_fa.fetch(chrom, 
-                                int(center) - int(frag_size/2), 
-                                int(center) + int(frag_size/2))
+                        int(center) - int(frag_size/2), 
+                        int(center) + int(frag_size/2))
 
     seq = seq.upper() 
     seq = reverse_complement(seq) if strand == "-" else seq
@@ -70,7 +66,7 @@ cdef str padded_seq(str chrom, str start_str, str end_str , str strand, genome_f
  
 
 
-def fetch_trainings(bed_file, fasta, N_padded=True):
+def fetch_trainings(bed_file, fasta, N_padded = True):
     '''
     For each record in bed file, extract the sequence, and center it
     fill up both sides to length of (seq_length) with Ns.
@@ -104,7 +100,7 @@ def fetch_trainings(bed_file, fasta, N_padded=True):
             yield seq, label
 
 
-def generate_padded_data(bed_file, fasta, N_padded=True):
+def generate_padded_data(bed_file, fasta):
     '''
     Wrapper for generating one-hot-encoded sequences
 
@@ -115,7 +111,7 @@ def generate_padded_data(bed_file, fasta, N_padded=True):
         str seq, na_label
         int label
 
-    for i, (seq, na_label) in enumerate(fetch_trainings(bed_file, fasta, N_padded)):
+    for i, (seq, na_label) in enumerate(fetch_trainings(bed_file, fasta)):
         if set(seq).issubset(acceptable_nuc):
             label = label_encoder[na_label]
             yield dna_encoder.transform(seq), label
@@ -123,8 +119,7 @@ def generate_padded_data(bed_file, fasta, N_padded=True):
 
 class data_generator():
     
-    def __init__(self, bed_pos, bed_neg, fasta, 
-                 batch_size=1000, N_padded=True, seed = 0):
+    def __init__(self, bed_pos, bed_neg, fasta, batch_size=1000, N_padded=True, seed = 0):
         '''
         Wrapper for generating one-hot-encoded sequences
 
@@ -144,7 +139,6 @@ class data_generator():
         self.DNA_generator = self.init_generator(self.DNA)
         self.label_counter = defaultdict(int) #make sure classes label is balanced
         srand48(seed)
-
 
     def init_generator(self, bed):
         return fetch_trainings(bed, self.fasta, self.N_padded)
@@ -179,10 +173,11 @@ class data_generator():
 
         
         if set(seq).issubset(acceptable_nuc):
-            if self.label_counter[na_label] <= self.half_batch and random() >= 0.8:
-                label = label_encoder[na_label] 
+            
+            if self.label_counter[na_label] <= self.half_batch and random() >= 0.2:
+                label = label_encoder[na_label]
 
-                self.X.append(dna_encoder.transform(seq))
+                self.X.append(dna_encoder.transform(seq).transpose())
                 self.Y.append(label)
                 self.label_counter[na_label] += 1
                 self.sample_num += 1
@@ -194,8 +189,9 @@ class data_generator():
         generator for Keras fit_generator
         '''
         X, Y = self.data_gen()
-        idx = np.random.permutation(len(Y))
-        return np.array(X)[idx], np.array(Y)[idx]
+        X = torch.Tensor(X)
+        X.requires_grad_()
+        return X, torch.Tensor(Y)
 
 
 def prediction_generator(test_bed, fa_file, batch_size = 1000, N_padded=True):
@@ -222,25 +218,45 @@ def prediction_generator(test_bed, fa_file, batch_size = 1000, N_padded=True):
         for frag_count, bed_line in enumerate(bed):
             fields = bed_line.rstrip('\n').split('\t')
             chrom, start, end, strand = itemgetter(0,1,2,5)(fields)
-            seq = padded_seq(chrom, start, end, strand, genome_fa, N_padded)
-            if set(seq).issubset(acceptable_nuc) and \
-                    long(start) > frag_size and \
-                    long(end) < genome_fa.get_reference_length(chrom) - frag_size:
-                features.append(dna_encoder.transform(seq))
-                lines.append(bed_line.strip())
-                sample_in_batch += 1
-                if sample_in_batch % batch_size == 0 and sample_in_batch > 0:
-                    yield(np.array(features), lines)
-                    features = []
-                    lines = []
+            if long(start) > frag_size:
+                seq = padded_seq(chrom, start, end, strand, genome_fa, N_padded)
+                if set(seq).issubset(acceptable_nuc):
+                    features.append(dna_encoder.transform(seq))
+                    lines.append(bed_line.strip())
+                    sample_in_batch += 1
+                    if sample_in_batch % batch_size == 0 and sample_in_batch > 0:
+                        yield(torch.Tensor(features), lines)
+                        features = []
+                        lines = []
             else:
                 skip += 1
 
     if lines: 
-        yield(np.array(features), lines)
+        yield(torch.Tensor(features), lines)
     
     print('Parsed: {frag_count} fragments\n'\
           'Skipped {skip} fragments with non-standard nucleotides'\
           .format(frag_count = frag_count, skip = skip), 
           file=sys.stderr)
- 
+
+
+
+def progress(total, progress, epoch, status):
+    """
+    Displays or updates a console progress bar.
+
+    Original source: https://stackoverflow.com/a/15860757/1391441
+    """
+    barLength = 20
+    progress = float(progress) / float(total)
+    if progress >= 1.:
+        progress, status = 1, "\r\n"
+    block = int(round(barLength * progress))
+    text = "\r[Epoch {epoch}]: [{bar}] {percentage}% {status}".format(
+        epoch = epoch,
+        bar = "#" * block + "-" * (barLength - block), 
+        percentage = round(progress * 100, 0),
+        status = status)
+    sys.stdout.write(text)
+    if progress < 1:
+        sys.stdout.flush()

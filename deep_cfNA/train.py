@@ -120,8 +120,8 @@ def validation_sample(test_bed, fa_file, model):
         true_label.extend(y_test.tolist())
         samples += len(y_test)
 
-    predicted_prob = np.array(predicted_prob)
-    true_label = np.array(true_label)
+    predicted_prob = 1 - np.array(predicted_prob)
+    true_label = 1 - np.array(true_label)
     assert(predicted_prob.shape == true_label.shape)
 
     predicted_class = predicted_prob.round()
